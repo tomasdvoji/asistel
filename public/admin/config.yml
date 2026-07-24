@@ -1,0 +1,185 @@
+# Konfigurace vizuálního editoru (Decap CMS) pro web Asistel.
+# Kolegové se přihlásí na /admin svým GitHub účtem (musí mít přístup k repozitáři)
+# a upravují texty, prodejny, tým i fotoalbum. Vše se ukládá do repozitáře
+# a GitHub Pages web automaticky přegenerují.
+
+backend:
+  name: github
+  repo: tomasdvoji/asistel
+  branch: main
+  # OAuth brána běží na Hangar workeru (endpointy /api/decap/auth a /api/decap/callback)
+  base_url: https://hangar-web-preview.webshowcase-tomas.workers.dev
+  auth_endpoint: /api/decap/auth
+
+# Pro lokální zkoušení bez přihlašování: odkomentujte řádek níže a spusťte `npx decap-server`.
+# local_backend: true
+
+media_folder: "public/uploads"
+public_folder: "/uploads"
+locale: "cs"
+
+collections:
+  # ---------- Texty stránek ----------
+  - name: "stranky"
+    label: "Texty stránek"
+    description: "Úprava textů na webu. Nové soubory se sem nepřidávají, jen se upravují existující."
+    files:
+      - name: "web"
+        label: "Web — základní údaje"
+        file: "src/data/editable/site.json"
+        fields:
+          - { name: "name", label: "Název firmy", widget: "string" }
+          - { name: "claim", label: "Hlavní slogan (nadpis na úvodu)", widget: "string" }
+          - { name: "partnerNote", label: "Text v patičce (partner)", widget: "string" }
+          - { name: "careerUrl", label: "Odkaz na nabídky práce (prace.cz)", widget: "string" }
+          - { name: "copyright", label: "Copyright v patičce", widget: "string" }
+          - { name: "address", label: "Sídlo firmy", widget: "string" }
+          - { name: "ico", label: "IČO", widget: "string" }
+          - { name: "dic", label: "DIČ", widget: "string" }
+
+      - name: "uvod"
+        label: "Úvodní stránka"
+        file: "src/data/editable/home.json"
+        fields:
+          - { name: "heroSub", label: "Podtitul pod hlavním nadpisem", widget: "text" }
+          - { name: "btnShops", label: "Tlačítko Prodejny", widget: "string" }
+          - { name: "btnServices", label: "Tlačítko Služby", widget: "string" }
+          - { name: "btnCareer", label: "Tlačítko Kariéra", widget: "string" }
+          - { name: "mapHeading", label: "Mapa — nadpis", widget: "string" }
+          - { name: "mapPara1", label: "Mapa — první odstavec", widget: "text" }
+          - { name: "mapPara2", label: "Mapa — druhý odstavec", widget: "text" }
+          - { name: "mapNote", label: "Popisek pod mapou", widget: "string" }
+          - { name: "servicesEyebrow", label: "Služby — štítek", widget: "string" }
+          - { name: "servicesHeading", label: "Služby — nadpis", widget: "string" }
+          - { name: "servicesBtn", label: "Služby — tlačítko objednání", widget: "string" }
+          - name: "services"
+            label: "Služby (karty)"
+            widget: "list"
+            summary: "{{fields.title}}"
+            fields:
+              - name: "icon"
+                label: "Ikona"
+                widget: "select"
+                options: ["phone", "globe", "tv", "list", "headphones", "wrench"]
+              - { name: "title", label: "Nadpis", widget: "string" }
+              - { name: "text", label: "Popis", widget: "text" }
+          - { name: "teamHeading", label: "Tým — nadpis", widget: "string" }
+          - { name: "teamLead", label: "Tým — úvodní text", widget: "text" }
+          - { name: "teamBtn", label: "Tým — tlačítko", widget: "string" }
+          - { name: "tbHeading", label: "Teambuildingy — nadpis", widget: "string" }
+          - { name: "tbLead", label: "Teambuildingy — text", widget: "text" }
+          - { name: "tbBtn", label: "Teambuildingy — tlačítko", widget: "string" }
+          - { name: "careerEyebrow", label: "Kariéra — štítek", widget: "string" }
+          - { name: "careerHeading", label: "Kariéra — nadpis", widget: "string" }
+          - { name: "careerPara1", label: "Kariéra — první odstavec", widget: "text" }
+          - { name: "careerPara2", label: "Kariéra — druhý odstavec", widget: "text" }
+          - { name: "careerBtn", label: "Kariéra — tlačítko", widget: "string" }
+
+  # ---------- Kariéra ----------
+  - name: "kariera"
+    label: "Kariéra"
+    files:
+      - name: "inzerat"
+        label: "Stránka Kariéra (inzerát)"
+        file: "src/data/editable/kariera.json"
+        fields:
+          - { name: "eyebrow", label: "Štítek nahoře", widget: "string" }
+          - { name: "title", label: "Nadpis stránky", widget: "string" }
+          - { name: "intro", label: "Úvodní odstavec", widget: "text" }
+          - { name: "contactHeading", label: "Kontakt — nadpis", widget: "string" }
+          - { name: "contactEmailLabel", label: "Kontakt — popisek e-mailu", widget: "string" }
+          - { name: "email", label: "Kontaktní e-mail", widget: "string", required: false, hint: "Dokud je prázdný, zobrazí se poznámka, že kontakty doplníme." }
+          - { name: "contactPhoneLabel", label: "Kontakt — popisek telefonu", widget: "string" }
+          - { name: "phone", label: "Kontaktní telefon", widget: "string", required: false }
+          - name: "sections"
+            label: "Oddíly inzerátu"
+            widget: "list"
+            summary: "{{fields.heading}}"
+            fields:
+              - { name: "heading", label: "Nadpis oddílu", widget: "string" }
+              - { name: "items", label: "Body", widget: "list" }
+          - { name: "praceLabel", label: "Tlačítko dole — text", widget: "string" }
+          - { name: "praceUrl", label: "Tlačítko dole — odkaz", widget: "string" }
+
+  # ---------- Prodejny ----------
+  - name: "prodejny"
+    label: "Prodejny"
+    files:
+      - name: "seznam"
+        label: "Seznam prodejen"
+        file: "src/data/editable/shops.json"
+        fields:
+          - { name: "eyebrow", label: "Štítek nahoře", widget: "string" }
+          - { name: "title", label: "Nadpis stránky", widget: "string" }
+          - { name: "lead", label: "Úvodní text", widget: "text" }
+          - name: "items"
+            label: "Prodejny"
+            widget: "list"
+            summary: "{{fields.name}}"
+            fields:
+              - { name: "id", label: "Adresa (slug)", widget: "string", hint: "Bez diakritiky a mezer, např. mlada-boleslav. Neměňte, pokud nemusíte." }
+              - { name: "name", label: "Město / název", widget: "string" }
+              - { name: "address", label: "Adresa", widget: "string" }
+              - { name: "hours", label: "Otevírací doba", widget: "string" }
+              - { name: "email", label: "E-mail prodejny (chodí sem objednávky)", widget: "string", required: false, hint: "Když je prázdný, objednávky chodí na centrální e-mail nastavený na stránce Objednání." }
+              - { name: "phone", label: "Telefon na prodejnu", widget: "string", required: false }
+              - { name: "photo", label: "Fotka prodejny", widget: "image", required: false }
+              - { name: "mapX", label: "Poloha na mapě — X", widget: "number", value_type: "int", hint: "Technické pole (0–600). Needitujte, pokud nemusíte." }
+              - { name: "mapY", label: "Poloha na mapě — Y", widget: "number", value_type: "int", hint: "Technické pole (0–350). Needitujte, pokud nemusíte." }
+
+  # ---------- Objednání ----------
+  - name: "objednani"
+    label: "Objednání na prodejnu"
+    files:
+      - name: "formular"
+        label: "Objednávkový formulář"
+        file: "src/data/editable/objednat.json"
+        fields:
+          - { name: "eyebrow", label: "Štítek nahoře", widget: "string" }
+          - { name: "title", label: "Nadpis stránky", widget: "string" }
+          - { name: "lead", label: "Úvodní text", widget: "text" }
+          - { name: "fallbackEmail", label: "Centrální e-mail pro objednávky", widget: "string", hint: "Sem chodí objednávky z prodejen, které nemají vyplněný vlastní e-mail." }
+          - { name: "successHeading", label: "Potvrzení — nadpis", widget: "string" }
+          - { name: "successText", label: "Potvrzení — text", widget: "text" }
+          - { name: "errorText", label: "Chybová hláška", widget: "text" }
+          - { name: "autoReplyIntro", label: "E-mail zákazníkovi — úvod", widget: "text" }
+          - { name: "autoReplyOutro", label: "E-mail zákazníkovi — závěr", widget: "text" }
+
+  # ---------- Tým ----------
+  - name: "tym"
+    label: "Tým"
+    files:
+      - name: "clenove"
+        label: "Členové týmu"
+        file: "src/data/editable/team.json"
+        fields:
+          - { name: "eyebrow", label: "Štítek nahoře", widget: "string" }
+          - { name: "title", label: "Nadpis stránky", widget: "string" }
+          - { name: "lead", label: "Úvodní text", widget: "text" }
+          - name: "items"
+            label: "Lidé"
+            widget: "list"
+            summary: "{{fields.name}} — {{fields.role}}"
+            fields:
+              - { name: "name", label: "Jméno", widget: "string" }
+              - { name: "role", label: "Role a prodejna", widget: "string", hint: "Např. Vedoucí prodejny · Praha-Dejvice" }
+              - { name: "photo", label: "Fotka", widget: "image", required: false, hint: "Když fotku nenahrajete, zobrazí se iniciály." }
+
+  # ---------- Fotoalbum ----------
+  - name: "album"
+    label: "Fotoalbum"
+    files:
+      - name: "fotky"
+        label: "Fotky z akcí"
+        file: "src/data/editable/album.json"
+        fields:
+          - { name: "eyebrow", label: "Štítek nahoře", widget: "string" }
+          - { name: "title", label: "Nadpis stránky", widget: "string" }
+          - { name: "lead", label: "Úvodní text", widget: "text" }
+          - name: "items"
+            label: "Fotky"
+            widget: "list"
+            summary: "{{fields.caption}}"
+            fields:
+              - { name: "image", label: "Fotka", widget: "image" }
+              - { name: "caption", label: "Popisek", widget: "string" }

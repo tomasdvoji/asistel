@@ -1,0 +1,11 @@
+{
+  "eyebrow": "Objednání",
+  "title": "Objednejte se na prodejnu",
+  "lead": "Vyberte si prodejnu, den a čas — my se na vás připravíme. Potvrzení vám přijde na e-mail.",
+  "fallbackEmail": "vitafortnite04@gmail.com",
+  "successHeading": "Máte objednáno!",
+  "successText": "Vaši rezervaci jsme přijali a potvrzení jsme vám poslali na e-mail. Budeme se na vás těšit.",
+  "errorText": "Objednávku se nepodařilo odeslat. Zkuste to prosím znovu, nebo se nám ozvěte telefonicky přímo na prodejnu.",
+  "autoReplyIntro": "Dobrý den,\nděkujeme za Vaši rezervaci. Termín jsme úspěšně zaznamenali a budeme se na Vás těšit na naší prodejně 😊",
+  "autoReplyOutro": "V případě změny nebo dotazu nás neváhejte kontaktovat.\n\nS pozdravem\nTým partnerských prodejen T-Mobile"
+}

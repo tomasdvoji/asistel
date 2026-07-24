@@ -1,0 +1,153 @@
+---
+import Base from '../layouts/Base.astro';
+import SvcIcon from '../components/SvcIcon.astro';
+import { media } from '../media';
+import site from '../data/editable/site.json';
+import home from '../data/editable/home.json';
+import shops from '../data/editable/shops.json';
+import team from '../data/editable/team.json';
+import album from '../data/editable/album.json';
+
+const heroWords = site.claim.split(' ');
+const teamPreview = team.items.slice(0, 4);
+const tbPreview = album.items.slice(0, 4);
+const initials = (name: string) => name.split(' ').map((w) => w[0]).join('');
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
+---
+<Base title={`${site.name} — ${site.claim.replace(/\.$/, '')}`} description={`${site.name} je oficiálním partnerem T-Mobile Czech Republic. Tarify, telefony, internet i příslušenství — vše pod jednou střechou.`}>
+  <section class="hero" id="uvod" style={`--hero-img:url('${base}/uploads/hero-prodejna.jpeg')`}>
+    <svg class="spotlight" viewBox="0 0 3787 2842" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g filter="url(#spotlight-blur)">
+        <ellipse cx="1924.71" cy="273.501" rx="1924.71" ry="273.501"
+          transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
+          fill="#E20074" fill-opacity="0.17"></ellipse>
+      </g>
+      <defs>
+        <filter id="spotlight-blur" x="0.86" y="0.84" width="3785.16" height="2840.26"
+          filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+          <feGaussianBlur stdDeviation="151" result="blur"></feGaussianBlur>
+        </filter>
+      </defs>
+    </svg>
+    <svg class="spotlight spotlight--alt" viewBox="0 0 3787 2842" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <g filter="url(#spotlight-blur-2)">
+        <ellipse cx="1924.71" cy="273.501" rx="1924.71" ry="273.501"
+          transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
+          fill="#E20074" fill-opacity="0.15"></ellipse>
+      </g>
+      <defs>
+        <filter id="spotlight-blur-2" x="0.86" y="0.84" width="3785.16" height="2840.26"
+          filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"></feBlend>
+          <feGaussianBlur stdDeviation="151" result="blur"></feGaussianBlur>
+        </filter>
+      </defs>
+    </svg>
+    <div class="container hero-inner">
+      <p class="partner-badge"><img src={base + "/tmobile-t.svg"} alt="" width="16" height="19">Oficiální partner T-Mobile</p>
+      <h1>{heroWords.map((w, i) => <><span class="w grad-text">{w}</span>{i < heroWords.length - 1 ? ' ' : ''}</>)}</h1>
+      <p class="hero-sub">{home.heroSub}</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href={base + "/prodejny"}>{home.btnShops}</a>
+        <a class="btn btn-ghost" href="#sluzby">{home.btnServices}</a>
+        <a class="btn btn-ghost" href={base + "/kariera"}>{home.btnCareer}</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track">
+      {shops.items.map((s) => <span>{s.name}</span>)}
+      {shops.items.map((s) => <span>{s.name}</span>)}
+    </div>
+  </div>
+
+  <section class="section" id="prodejny">
+    <div class="container split">
+      <div class="map-wrap" data-reveal>
+        <svg class="cz-map" viewBox="0 0 600 350" role="group" aria-label="Mapa prodejen Asistel v České republice">
+          <path class="cz-outline" pathLength="1" d="M0,113 L21,124 L41,61 L83,77 L116,63 L156,46 L204,22 L197,1 L257,8 L283,25 L306,39 L348,64 L386,67 L365,89 L409,134 L499,103 L527,138 L574,158 L599,215 L538,251 L493,308 L452,305 L430,340 L394,314 L352,322 L272,296 L231,346 L173,343 L126,291 L48,223 L27,183 L41,159 Z"/>
+          {shops.items.map((s) => (
+            <a href={`${base}/prodejny#${s.id}`} aria-label={`Prodejna ${s.name}`}><circle class="shop-dot" cx={s.mapX} cy={s.mapY} r="7"><title>{s.name}</title></circle></a>
+          ))}
+        </svg>
+        <p class="map-note muted">{home.mapNote}</p>
+      </div>
+      <div data-reveal>
+        <h2 class="grad-text">{home.mapHeading}</h2>
+        <p>{home.mapPara1}</p>
+        <p class="muted" style="margin-top:12px">{home.mapPara2}</p>
+        <p style="margin-top:28px"><a class="btn btn-primary" href={base + "/prodejny"}>{home.btnShops}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="sluzby">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow">{home.servicesEyebrow}</span>
+        <h2 class="grad-text">{home.servicesHeading}</h2>
+      </div>
+      <div class="svc-grid">
+        {home.services.map((svc) => (
+          <article class="card" data-reveal>
+            <SvcIcon name={svc.icon} />
+            <h3>{svc.title}</h3>
+            <p class="muted">{svc.text}</p>
+          </article>
+        ))}
+      </div>
+      <p style="margin-top:32px;text-align:center"><a class="btn btn-primary" href={base + "/objednat"}>{home.servicesBtn}</a></p>
+    </div>
+  </section>
+
+  <section class="section" id="tym">
+    <div class="container">
+      <div class="section-head" data-reveal>
+        <h2 class="grad-text">{home.teamHeading}</h2>
+        <p class="muted">{home.teamLead}</p>
+      </div>
+      <div class="team-grid">
+        {teamPreview.map((m) => (
+          <article class="card team-card" data-reveal>
+            {m.photo
+              ? <img class="avatar" src={media(m.photo)} alt="" loading="lazy" />
+              : <div class="avatar" aria-hidden="true">{initials(m.name)}</div>}
+            <h3>{m.name}</h3>
+            <p class="muted">{m.role}</p>
+          </article>
+        ))}
+      </div>
+      <p style="margin-top:32px;text-align:center"><a class="btn btn-ghost" href={base + "/tym"}>{home.teamBtn}</a></p>
+    </div>
+  </section>
+
+  <section class="section" id="teambuildingy">
+    <div class="container split">
+      <div data-reveal>
+        <h2 class="grad-text">{home.tbHeading}</h2>
+        <p class="muted">{home.tbLead}</p>
+        <p style="margin-top:28px"><a class="btn btn-ghost" href={base + "/album"}>{home.tbBtn}</a></p>
+      </div>
+      <div class="tb-preview" aria-hidden="true">
+        {tbPreview.map((p) => <img class="tb-tile" src={media(p.image)} alt="" loading="lazy" data-reveal />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="kariera">
+    <div class="container">
+      <div class="career-panel" data-reveal>
+        <span class="eyebrow">{home.careerEyebrow}</span>
+        <h2 class="grad-text">{home.careerHeading}</h2>
+        <p>{home.careerPara1}</p>
+        <p class="muted" style="margin-top:12px">{home.careerPara2}</p>
+        <p style="margin-top:32px"><a class="btn btn-primary" href={base + "/kariera"}>{home.careerBtn}</a></p>
+      </div>
+    </div>
+  </section>
+</Base>

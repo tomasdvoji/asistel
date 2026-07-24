@@ -1,0 +1,17 @@
+{
+  "eyebrow": "Prodejny",
+  "title": "Naše prodejny",
+  "lead": "10 prodejen po celé České republice. Přijďte – poradíme vám osobně.",
+  "items": [
+    { "id": "rychnov", "name": "Rychnov nad Kněžnou", "address": "Rychnov nad Kněžnou", "hours": "Po–Pá 9:00–17:00", "email": "rychnov@asistel.cz", "phone": "605 113 377", "photo": "https://picsum.photos/seed/asistel-rychnov/800/500", "mapX": 366, "mapY": 125 },
+    { "id": "benesov", "name": "Benešov", "address": "Benešov", "hours": "Po–Pá 9:00–17:00", "email": "benesov@asistel.cz", "phone": "604 727 323", "photo": "https://picsum.photos/seed/asistel-benesov/800/500", "mapX": 226, "mapY": 178 },
+    { "id": "vrchlabi", "name": "Vrchlabí", "address": "Vrchlabí", "hours": "Po–Pá 9:00–17:00", "email": "vrchlabi@asistel.cz", "phone": "603 512 517", "photo": "https://picsum.photos/seed/asistel-vrchlabi/800/500", "mapX": 312, "mapY": 59 },
+    { "id": "turnov", "name": "Turnov", "address": "Turnov", "hours": "Po–Pá 9:00–17:00", "email": "", "phone": "", "photo": "https://picsum.photos/seed/asistel-turnov/800/500", "mapX": 272, "mapY": 65 },
+    { "id": "trebic", "name": "Třebíč", "address": "Třebíč", "hours": "Po–Pá 9:00–17:00", "email": "trebic@asistel.cz", "phone": "737 828 545", "photo": "https://picsum.photos/seed/asistel-trebic/800/500", "mapX": 331, "mapY": 258 },
+    { "id": "jindrichuv-hradec", "name": "Jindřichův Hradec", "address": "Jindřichův Hradec", "hours": "Po–Pá 9:00–17:00", "email": "jindrichuvhradec@asistel.cz", "phone": "734 206 169", "photo": "https://picsum.photos/seed/asistel-jhradec/800/500", "mapX": 254, "mapY": 268 },
+    { "id": "trutnov", "name": "Trutnov", "address": "Trutnov", "hours": "Po–Pá 9:00–17:00", "email": "", "phone": "", "photo": "https://picsum.photos/seed/asistel-trutnov/800/500", "mapX": 334, "mapY": 69 },
+    { "id": "nachod", "name": "Náchod", "address": "Náchod", "hours": "Po–Pá 9:00–17:00", "email": "nachod1@asistel.cz", "phone": "603 819 417", "photo": "https://picsum.photos/seed/asistel-nachod/800/500", "mapX": 356, "mapY": 88 },
+    { "id": "litomysl", "name": "Litomyšl", "address": "Litomyšl", "hours": "Po–Pá 9:00–17:00", "email": "", "phone": "", "photo": "https://picsum.photos/seed/asistel-litomysl/800/500", "mapX": 369, "mapY": 165 },
+    { "id": "usti-nad-orlici", "name": "Ústí nad Orlicí", "address": "Ústí nad Orlicí", "hours": "Po–Pá 9:00–17:00", "email": "", "phone": "", "photo": "https://picsum.photos/seed/asistel-usti/800/500", "mapX": 376, "mapY": 151 }
+  ]
+}

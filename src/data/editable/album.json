@@ -1,0 +1,16 @@
+{
+  "eyebrow": "Teambuildingy",
+  "title": "Rádi se potkáváme i mimo práci.",
+  "lead": "Teambuildingy, firemní výlety nebo jen společná večeře – pravidelně vyrážíme ven jako tým. Věříme, že dobrá parta dělá dobrou práci, a proto investujeme do akcí, kde si každý odpočine, zasměje se a lépe pozná své kolegy.",
+  "items": [
+    { "image": "https://picsum.photos/seed/asistel-album-1/640/480", "caption": "Teambuilding 2025" },
+    { "image": "https://picsum.photos/seed/asistel-album-2/640/480", "caption": "Firemní výlet" },
+    { "image": "https://picsum.photos/seed/asistel-album-3/640/480", "caption": "Společná večeře" },
+    { "image": "https://picsum.photos/seed/asistel-album-4/640/480", "caption": "Teambuilding 2025" },
+    { "image": "https://picsum.photos/seed/asistel-album-5/640/480", "caption": "Vánoční večírek" },
+    { "image": "https://picsum.photos/seed/asistel-album-6/640/480", "caption": "Letní grilovačka" },
+    { "image": "https://picsum.photos/seed/asistel-album-7/640/480", "caption": "Firemní výlet" },
+    { "image": "https://picsum.photos/seed/asistel-album-8/640/480", "caption": "Teambuilding 2024" },
+    { "image": "https://picsum.photos/seed/asistel-album-9/640/480", "caption": "Bowling" }
+  ]
+}

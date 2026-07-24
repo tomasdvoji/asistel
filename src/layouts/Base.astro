@@ -1,0 +1,99 @@
+---
+// Společná kostra všech stránek — hlavička, navigace, patička.
+import site from '../data/editable/site.json';
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
+
+interface Props {
+  title: string;
+  description: string;
+}
+const { title, description } = Astro.props;
+---
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8">
+  <script>document.documentElement.classList.add("js")</script>
+  <script is:inline>
+    // Aplikuje ulozenou verzi nadpisu jeste pred vykreslenim (bez probliknuti)
+    (function () {
+      if (localStorage.getItem('asistel-nadpisy') === 'bile') document.documentElement.classList.add('headings-white');
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title}</title>
+  <meta name="description" content={description}>
+  <meta property="og:title" content={title}>
+  <meta property="og:description" content={description}>
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="cs_CZ">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23E20074'/%3E%3Ctext x='32' y='45' font-family='Arial, sans-serif' font-size='38' font-weight='700' fill='white' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href={base + "/styles.css?v=" + Date.now()}>
+</head>
+<body>
+  <header class="site-nav">
+    <div class="container">
+      <a class="logo" href={base + "/"}>Asistel<span class="logo-sep" aria-hidden="true"></span><img class="logo-tmobile" src={base + "/tmobile-t.svg"} alt="T-Mobile" width="20" height="24"></a>
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="nav-links" aria-label="Otevřít menu">☰</button>
+      <ul class="nav-links" id="nav-links" data-nav-links>
+        <li><a href={base + "/#prodejny"}>Prodejny</a></li>
+        <li><a href={base + "/#sluzby"}>Služby</a></li>
+        <li><a href={base + "/#tym"}>Tým</a></li>
+        <li><a href={base + "/kariera"}>Kariéra</a></li>
+        <li><a href={base + "/objednat"}>Objednat se</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main id="main">
+    <slot />
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>
+        <a class="logo" href={base + "/"}>Asistel<span class="logo-sep" aria-hidden="true"></span><img class="logo-tmobile" src={base + "/tmobile-t.svg"} alt="T-Mobile" width="20" height="24"></a>
+        <p>{site.name}<br>{site.address}<br>IČO: {site.ico} | DIČ: {site.dic}<br>{site.partnerNote}</p>
+      </div>
+      <ul>
+        <li><a href={base + "/prodejny"}>Prodejny</a></li>
+        <li><a href={base + "/tym"}>Tým</a></li>
+        <li><a href={base + "/album"}>Fotoalbum</a></li>
+        <li><a href={base + "/kariera"}>Kariéra</a></li>
+      </ul>
+      <p>{site.copyright}</p>
+    </div>
+  </footer>
+
+  <script src={base + "/script.js"} is:inline></script>
+  <script is:inline>
+    // Plovouci prepinac verzi nadpisu (fialova / bila)
+    (function () {
+      var box = document.createElement('div');
+      box.className = 'version-toggle';
+      [['fialove', 'Magenta'], ['bile', 'Tmavé']].forEach(function (v) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.textContent = v[1];
+        b.dataset.v = v[0];
+        b.addEventListener('click', function () {
+          localStorage.setItem('asistel-nadpisy', v[0]);
+          document.documentElement.classList.toggle('headings-white', v[0] === 'bile');
+          mark();
+        });
+        box.appendChild(b);
+      });
+      function mark() {
+        var cur = localStorage.getItem('asistel-nadpisy') === 'bile' ? 'bile' : 'fialove';
+        box.querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b.dataset.v === cur); });
+      }
+      mark();
+      document.body.appendChild(box);
+    })();
+  </script>
+</body>
+</html>

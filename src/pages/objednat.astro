@@ -1,0 +1,177 @@
+---
+import Base from '../layouts/Base.astro';
+import shops from '../data/editable/shops.json';
+import cfg from '../data/editable/objednat.json';
+
+// Časy po půlhodině 9:00–18:00 — konkrétní otevírací dobu si ověří prodejna.
+const times: string[] = [];
+for (let h = 9; h < 18; h++) times.push(`${h}:00`, `${h}:30`);
+times.push('18:00');
+
+// E-maily prodejen se do HTML nedávají přímo (spam boti) — jen id a jméno,
+// adresy si vezme skript z JSONu níže zakódované v base64.
+const shopMeta = shops.items.map((s) => ({ id: s.id, name: s.name, email: s.email || cfg.fallbackEmail, address: s.address, hours: s.hours }));
+const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base64');
+---
+<Base title={`${cfg.title} — Asistel s.r.o`} description={cfg.lead}>
+  <section class="section page-head">
+    <div class="container">
+      <span class="eyebrow">{cfg.eyebrow}</span>
+      <h1 class="grad-text">{cfg.title}</h1>
+      <p class="muted">{cfg.lead}</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container booking">
+      <form class="card booking-form" id="booking-form" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="bf-shop">Prodejna *</label>
+            <select id="bf-shop" name="prodejna" required>
+              {shops.items.map((s) => <option value={s.id}>{s.name}</option>)}
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="bf-date">Den *</label>
+            <input id="bf-date" name="datum" type="date" required>
+          </div>
+          <div class="form-field">
+            <label for="bf-time">Čas *</label>
+            <select id="bf-time" name="cas" required>
+              {times.map((t) => <option value={t}>{t}</option>)}
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label for="bf-desc">S čím vám pomůžeme? *</label>
+          <textarea id="bf-desc" name="popis" rows="4" required placeholder="Např. výběr nového telefonu, změna tarifu, reklamace…"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="bf-name">Jméno a příjmení *</label>
+            <input id="bf-name" name="jmeno" type="text" autocomplete="name" required>
+          </div>
+          <div class="form-field">
+            <label for="bf-phone">Telefon *</label>
+            <input id="bf-phone" name="telefon" type="tel" autocomplete="tel" required>
+          </div>
+          <div class="form-field">
+            <label for="bf-email">E-mail *</label>
+            <input id="bf-email" name="email" type="email" autocomplete="email" required>
+          </div>
+        </div>
+        <p class="form-error muted" id="bf-error" hidden>{cfg.errorText}</p>
+        <p style="margin-top:8px"><button class="btn btn-primary" type="submit" id="bf-submit">Objednat se</button></p>
+      </form>
+
+      <div class="card booking-success" id="booking-success" hidden data-reveal-skip>
+        <h2 class="grad-text">{cfg.successHeading}</h2>
+        <p id="bs-summary"></p>
+        <p class="muted" style="margin-top:10px">{cfg.successText}</p>
+        <p style="margin-top:14px">
+          <a class="btn btn-primary" id="bs-gcal" target="_blank" rel="noopener">Přidat do Google Kalendáře</a>
+          <a class="btn" id="bs-ics" download="objednavka-asistel.ics">Stáhnout do kalendáře (.ics)</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" id="booking-data" set:html={JSON.stringify({ shopsB64: shopMetaB64, autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro })} />
+  <script is:inline>
+    (function () {
+      var form = document.getElementById('booking-form');
+      if (!form) return;
+      var data = JSON.parse(document.getElementById('booking-data').textContent);
+      var shops = JSON.parse(atob(data.shopsB64));
+
+      // predvyber prodejny z ?prodejna=id + minimalni datum = dnesek
+      var pre = new URLSearchParams(location.search).get('prodejna');
+      if (pre) form.prodejna.value = pre;
+      form.datum.min = new Date().toISOString().slice(0, 10);
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!form.reportValidity()) return;
+        var shop = shops.find(function (s) { return s.id === form.prodejna.value; }) || shops[0];
+        var d = form.datum.value.split('-');
+        var dateCz = d[2] + '. ' + d[1] + '. ' + d[0];
+        var summary = 'Prodejna ' + shop.name + ', ' + dateCz + ' v ' + form.cas.value + ' hod.';
+
+        // termin = 30min slot; casy pro kalendar v lokalnim tvaru bez zony
+        var t = form.cas.value.split(':');
+        var start = new Date(form.datum.value + 'T' + ('0' + t[0]).slice(-2) + ':' + t[1] + ':00');
+        var end = new Date(start.getTime() + 30 * 60000);
+        function fmt(dt) {
+          return dt.getFullYear() + ('0' + (dt.getMonth() + 1)).slice(-2) + ('0' + dt.getDate()).slice(-2) +
+            'T' + ('0' + dt.getHours()).slice(-2) + ('0' + dt.getMinutes()).slice(-2) + '00';
+        }
+        var evTitle = 'Asistel — objednávka: ' + shop.name;
+        var gcalUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+          '&text=' + encodeURIComponent(evTitle) +
+          '&dates=' + fmt(start) + '/' + fmt(end) +
+          '&location=' + encodeURIComponent(shop.address) +
+          '&details=' + encodeURIComponent(form.popis.value);
+
+        var btn = document.getElementById('bf-submit');
+        var errEl = document.getElementById('bf-error');
+        if (!errEl.dataset.base) errEl.dataset.base = errEl.textContent;
+        btn.disabled = true;
+        btn.textContent = 'Odesílám…';
+        errEl.hidden = true;
+
+        fetch('https://formsubmit.co/ajax/' + shop.email, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            _subject: 'Zákazník objednán k nám na prodejnu',
+            _template: 'table',
+            _captcha: 'false',
+            _replyto: form.email.value,
+            _autoresponse: data.autoIntro + '\n\n' +
+              summary + '\n' +
+              'Adresa: ' + shop.address + '\n' +
+              'Otevírací doba: ' + shop.hours + '\n' +
+              'S čím pomůžeme: ' + form.popis.value + '\n\n' +
+              'Přidat do kalendáře: ' + gcalUrl + '\n\n' + data.autoOutro,
+            'Prodejna': shop.name,
+            'Den': dateCz,
+            'Čas': form.cas.value,
+            'Popis': form.popis.value,
+            'Jméno': form.jmeno.value,
+            'Telefon': form.telefon.value,
+            'E-mail': form.email.value,
+            'Do kalendáře': gcalUrl
+          })
+        }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); })
+          .then(function (res) {
+            // FormSubmit umí vrátit i 200 se success:"false" (např. neaktivovaný e-mail)
+            var failed = !res.ok || String(res.j && res.j.success) === 'false';
+            if (failed) {
+              var err = new Error('send failed');
+              err.detail = (res.j && (res.j.message || res.j.error)) || ('HTTP ' + res.status);
+              throw err;
+            }
+            document.getElementById('bs-summary').textContent = summary;
+            document.getElementById('bs-gcal').href = gcalUrl;
+            var ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Asistel//objednavka//CS\r\nBEGIN:VEVENT\r\n' +
+              'UID:' + fmt(start) + '-' + shop.id + '@asistel\r\n' +
+              'DTSTAMP:' + fmt(start) + '\r\nDTSTART:' + fmt(start) + '\r\nDTEND:' + fmt(end) + '\r\n' +
+              'SUMMARY:' + evTitle + '\r\nLOCATION:' + shop.address + '\r\n' +
+              'DESCRIPTION:' + form.popis.value.replace(/\n/g, '\\n') + '\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n';
+            document.getElementById('bs-ics').href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
+            form.hidden = true;
+            document.getElementById('booking-success').hidden = false;
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          })
+          .catch(function (err) {
+            console.error('Objednávka se neodeslala:', err && err.detail ? err.detail : err);
+            errEl.textContent = errEl.dataset.base + (err && err.detail ? ' [' + err.detail + ']' : '');
+            errEl.hidden = false;
+            btn.disabled = false;
+            btn.textContent = 'Objednat se';
+          });
+      });
+    })();
+  </script>
+</Base>

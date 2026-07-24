@@ -1,0 +1,33 @@
+---
+import Base from '../layouts/Base.astro';
+import { media } from '../media';
+import album from '../data/editable/album.json';
+---
+<Base title="Fotoalbum — Asistel s.r.o" description="Fotoalbum z našich teambuildingů, firemních výletů a dalších akcí. Podívejte se, jak se bavíme a poznáváme se lépe jako tým.">
+  <section class="section page-head">
+    <div class="container">
+      <span class="eyebrow">{album.eyebrow}</span>
+      <h1 class="grad-text">{album.title}</h1>
+      <p class="muted">{album.lead}</p>
+    </div>
+  </section>
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="album-grid">
+        {album.items.map((p) => (
+          <button class="album-tile" type="button" data-lightbox data-caption={p.caption} aria-label={`Zvětšit fotku: ${p.caption}`} data-reveal>
+            <img src={media(p.image)} alt="" loading="lazy" />
+          </button>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <div class="lightbox" id="lightbox" hidden>
+    <div class="lightbox-body" role="dialog" aria-modal="true" aria-label="Náhled fotky">
+      <div class="lightbox-content"></div>
+      <p class="lightbox-cap"></p>
+      <button class="lightbox-close" type="button" aria-label="Zavřít">✕</button>
+    </div>
+  </div>
+</Base>

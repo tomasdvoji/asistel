@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import k from '../data/editable/kariera.json';
+---
+<Base title={`${k.title} — Asistel s.r.o`} description={k.intro}>
+  <section class="section page-head">
+    <div class="container">
+      <span class="eyebrow">{k.eyebrow}</span>
+      <h1 class="grad-text">{k.title}</h1>
+      <p class="muted">{k.intro}</p>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container job">
+      <div class="card job-contact" data-reveal>
+        <h2 class="grad-text">{k.contactHeading}</h2>
+        {k.email && <p>{k.contactEmailLabel} <a href={`mailto:${k.email}`}>{k.email}</a></p>}
+        {k.phone && <p>{k.contactPhoneLabel} <a href={`tel:${k.phone.replace(/\s/g, '')}`}>{k.phone}</a></p>}
+        {!k.email && !k.phone && <p class="muted">Kontakty brzy doplníme — zatím se podívejte na naše nabídky níže.</p>}
+      </div>
+
+      {k.sections.map((sec) => (
+        <div class="job-section" data-reveal>
+          <h2>{sec.heading}</h2>
+          <ul class="job-list">
+            {sec.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </div>
+      ))}
+
+      <p class="job-cta" data-reveal>
+        <a class="btn btn-primary" href={k.praceUrl} target="_blank" rel="noopener">{k.praceLabel}</a>
+      </p>
+    </div>
+  </section>
+</Base>

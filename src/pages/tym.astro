@@ -1,0 +1,30 @@
+---
+import Base from '../layouts/Base.astro';
+import { media } from '../media';
+import team from '../data/editable/team.json';
+const initials = (name: string) => name.split(' ').map((w) => w[0]).join('');
+---
+<Base title="Náš tým — Asistel s.r.o" description={`Tým ${team.items.length} profesionálů. Každý se jménem, svou specializací a zákazníky, které zná. Podívejte se, kdo stojí za Asistelem a vaší spokojeností.`}>
+  <section class="section page-head">
+    <div class="container">
+      <span class="eyebrow">{team.eyebrow}</span>
+      <h1 class="grad-text">{team.title}</h1>
+      <p class="muted">{team.lead}</p>
+    </div>
+  </section>
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="team-grid">
+        {team.items.map((m) => (
+          <article class="card team-card" data-reveal>
+            {m.photo
+              ? <img class="avatar" src={media(m.photo)} alt="" loading="lazy" />
+              : <div class="avatar" aria-hidden="true">{initials(m.name)}</div>}
+            <h3>{m.name}</h3>
+            <p class="muted">{m.role}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+</Base>

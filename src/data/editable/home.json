@@ -1,0 +1,32 @@
+{
+  "heroSub": "Jsme tu pro vás na každém kroku – od výběru telefonu přes nastavení tarifu až po reklamaci. Vše na našich partnerských prodejnách T-Mobile.",
+  "btnShops": "Naše prodejny",
+  "btnServices": "Naše služby",
+  "btnCareer": "Kariéra",
+  "mapHeading": "Síť prodejen po celé republice",
+  "mapPara1": "Asistel s.r.o je oficiálním partnerem T-Mobile Czech Republic. Provozujeme síť partnerských prodejen po celé České republice, kde zákazníkům nabízíme kompletní produkty a služby T-Mobile – tarify, telefony, internet i příslušenství.",
+  "mapPara2": "Nejsme jen obchod. Jsme tým lidí, kterým záleží na tom, aby odcházel každý zákazník spokojený. Jednoduše, lidsky, bez technického žargonu.",
+  "mapNote": "10 prodejen po celé České republice",
+  "servicesEyebrow": "Služby",
+  "servicesHeading": "Vše pod jednou střechou",
+  "servicesBtn": "Objednat se na prodejnu",
+  "services": [
+    { "icon": "phone", "title": "Telefony", "text": "Pomůžeme vybrat ten správný – podle potřeb, rozpočtu i zvyku." },
+    { "icon": "globe", "title": "Internet", "text": "Mobilní i domácí internet. Nastavíme, vysvětlíme, spustíme." },
+    { "icon": "tv", "title": "Televize", "text": "Televizní balíčky T-Mobile – poradíme, co se hodí právě vám." },
+    { "icon": "list", "title": "Tarify", "text": "Nový tarif, změna, přenos čísla – vyřešíme vše na místě." },
+    { "icon": "headphones", "title": "Příslušenství", "text": "Obaly, skla, nabíječky, sluchátka – vše po ruce." },
+    { "icon": "wrench", "title": "Reklamace a servis", "text": "Něco se pokazilo? Vyřídíme to za vás, bez stresu." }
+  ],
+  "teamHeading": "Za každou prodejnou stojí skuteční lidé.",
+  "teamLead": "Nejsme bezejmenné call centrum. Jsme tým konkrétních lidí – každý se jménem, svou specializací a svými zákazníky, které zná. Podívejte se, kdo stojí za Asistelem.",
+  "teamBtn": "Celý tým",
+  "tbHeading": "Rádi se potkáváme i mimo práci.",
+  "tbLead": "Teambuildingy, firemní výlety nebo jen společná večeře – pravidelně vyrážíme ven jako tým. Věříme, že dobrá parta dělá dobrou práci, a proto investujeme do akcí, kde si každý odpočine, zasměje se a lépe pozná své kolegy.",
+  "tbBtn": "Fotoalbum",
+  "careerEyebrow": "Kariéra",
+  "careerHeading": "Chceš dělat práci, která má smysl?",
+  "careerPara1": "U nás neřešíš jenom tarify. Pomáháš lidem se vším – od výběru nového telefonu a nastavení domácího internetu přes televizní balíčky a příslušenství až po reklamace a přenos čísla. Vyřešíš seniorce problém s telefonem, poradíš mladému tatínkovi první smartphone pro dítě, nebo jen nalepíš sklo a zákazník odchází s úsměvem.",
+  "careerPara2": "Jsme tým, který táhne za jeden provaz. Ambiciózní, ale lidský. Hledáme kolegy, kteří si rozumějí se zákazníky i mezi sebou.",
+  "careerBtn": "Volná místa"
+}
