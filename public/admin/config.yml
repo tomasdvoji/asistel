@@ -144,6 +144,9 @@ collections:
           - { name: "errorText", label: "Chybová hláška", widget: "text" }
           - { name: "autoReplyIntro", label: "E-mail zákazníkovi — úvod", widget: "text" }
           - { name: "autoReplyOutro", label: "E-mail zákazníkovi — závěr", widget: "text" }
+          - { name: "emailjsService", label: "EmailJS — Service ID", widget: "string", hint: "Technické pole, neměnit." }
+          - { name: "emailjsTemplate", label: "EmailJS — Template ID", widget: "string", hint: "Technické pole, neměnit." }
+          - { name: "emailjsPublicKey", label: "EmailJS — Public Key", widget: "string", hint: "Technické pole, neměnit." }
 
   # ---------- Tým ----------
   - name: "tym"

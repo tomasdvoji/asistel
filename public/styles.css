@@ -284,7 +284,7 @@ html.headings-white .grad-text {
   display: flex;
   align-items: center;
 }
-/* fotka prodejny (--hero-img z index.astro) — jemne rozmazana, at neni videt male rozliseni */
+/* fotka prodejny (--hero-img z index.astro) — ostra, bez rozmazani */
 .hero::before {
   content: "";
   position: absolute;
@@ -293,8 +293,6 @@ html.headings-white .grad-text {
   background-image: var(--hero-img);
   background-size: cover;
   background-position: center;
-  filter: blur(6px) saturate(1.15);
-  transform: scale(1.06);
 }
 .hero::after {
   content: "";
@@ -552,11 +550,6 @@ img.avatar { object-fit: cover; }
 @media (max-width: 880px) { .tb-preview .tb-tile:nth-child(even) { transform: none; } }
 
 /* ---------- kariéra ---------- */
-@property --angle {
-  syntax: "<angle>";
-  initial-value: 0deg;
-  inherits: false;
-}
 .career-panel {
   position: relative;
   border: 1px solid var(--border);
@@ -564,20 +557,8 @@ img.avatar { object-fit: cover; }
   padding: clamp(32px, 6vw, 72px);
   text-align: center;
   background:
-    radial-gradient(ellipse at 50% -20%, rgba(226, 0, 116, 0.16), transparent 60%),
+    radial-gradient(ellipse at 50% -20%, rgba(226, 0, 116, 0.05), transparent 60%),
     var(--bg-raised);
-}
-.career-panel::before {
-  content: "";
-  position: absolute;
-  inset: -1.5px;
-  border-radius: 21px;
-  z-index: -1;
-  background: conic-gradient(from var(--angle), transparent 0turn, rgba(226, 0, 116, 0.55) 0.1turn, transparent 0.22turn);
-  animation: spin-border 7s linear infinite;
-}
-@keyframes spin-border {
-  to { --angle: 360deg; }
 }
 .career-panel p { max-width: 46rem; margin-inline: auto; }
 

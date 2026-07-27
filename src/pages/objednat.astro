@@ -77,13 +77,14 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
     </div>
   </section>
 
-  <script type="application/json" id="booking-data" set:html={JSON.stringify({ shopsB64: shopMetaB64, autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro })} />
+  <script type="application/json" id="booking-data" set:html={JSON.stringify({ shopsB64: shopMetaB64, autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro, ejs: { service: cfg.emailjsService, template: cfg.emailjsTemplate, key: cfg.emailjsPublicKey } })} />
   <script is:inline>
     (function () {
       var form = document.getElementById('booking-form');
       if (!form) return;
       var data = JSON.parse(document.getElementById('booking-data').textContent);
-      var shops = JSON.parse(atob(data.shopsB64));
+      // atob vraci bajty jako latin1 — UTF-8 (ceske znaky) je nutne dekodovat pres TextDecoder
+      var shops = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(data.shopsB64), function (c) { return c.charCodeAt(0); })));
 
       // predvyber prodejny z ?prodejna=id + minimalni datum = dnesek
       var pre = new URLSearchParams(location.search).get('prodejna');
@@ -120,38 +121,89 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
         btn.textContent = 'Odesílám…';
         errEl.hidden = true;
 
-        fetch('https://formsubmit.co/ajax/' + shop.email, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-          body: JSON.stringify({
-            _subject: 'Zákazník objednán k nám na prodejnu',
-            _template: 'table',
-            _captcha: 'false',
-            _replyto: form.email.value,
-            _autoresponse: data.autoIntro + '\n\n' +
-              summary + '\n' +
-              'Adresa: ' + shop.address + '\n' +
-              'Otevírací doba: ' + shop.hours + '\n' +
-              'S čím pomůžeme: ' + form.popis.value + '\n\n' +
-              'Přidat do kalendáře: ' + gcalUrl + '\n\n' + data.autoOutro,
-            'Prodejna': shop.name,
-            'Den': dateCz,
-            'Čas': form.cas.value,
-            'Popis': form.popis.value,
-            'Jméno': form.jmeno.value,
-            'Telefon': form.telefon.value,
-            'E-mail': form.email.value,
-            'Do kalendáře': gcalUrl
-          })
-        }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (j) { return { ok: r.ok, status: r.status, j: j }; }); })
-          .then(function (res) {
-            // FormSubmit umí vrátit i 200 se success:"false" (např. neaktivovaný e-mail)
-            var failed = !res.ok || String(res.j && res.j.success) === 'false';
-            if (failed) {
-              var err = new Error('send failed');
-              err.detail = (res.j && (res.j.message || res.j.error)) || ('HTTP ' + res.status);
-              throw err;
-            }
+        // ---------- HTML e-maily pres EmailJS ----------
+        function esc(s) {
+          return String(s).replace(/[&<>"']/g, function (c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+          });
+        }
+        var MAGENTA = '#E20074';
+        function row(label, value) {
+          return '<tr><td style="padding:10px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px;white-space:nowrap">' + label + '</td>' +
+            '<td style="padding:10px 14px;border-bottom:1px solid #eee;color:#262626;font-size:14px">' + value + '</td></tr>';
+        }
+        function button(href, text) {
+          return '<a href="' + href + '" style="display:inline-block;background:' + MAGENTA + ';color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:12px 28px;border-radius:999px">' + text + '</a>';
+        }
+        function wrap(heading, inner) {
+          return '<div style="margin:0 auto;max-width:560px;font-family:Arial,Helvetica,sans-serif;background:#ffffff;border:1px solid #eeeeee;border-radius:12px;overflow:hidden">' +
+            '<div style="background:' + MAGENTA + ';padding:18px 24px;color:#ffffff;font-size:18px;font-weight:bold">Asistel <span style="opacity:.7">|</span> T&#8209;Mobile partner</div>' +
+            '<div style="padding:24px"><h2 style="margin:0 0 16px;font-size:20px;color:#262626">' + heading + '</h2>' + inner + '</div>' +
+            '<div style="padding:14px 24px;background:#fafafa;color:#999;font-size:12px">Asistel s.r.o &middot; partnersk&eacute; prodejny T&#8209;Mobile</div></div>';
+        }
+
+        var infoTable = '<table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #eee;border-radius:8px;border-collapse:separate;margin:0 0 20px">' +
+          row('Prodejna', esc(shop.name)) +
+          row('Den', esc(dateCz)) +
+          row('Čas', esc(form.cas.value) + ' hod.') +
+          row('Popis', esc(form.popis.value)) +
+          row('Jméno', esc(form.jmeno.value)) +
+          row('Telefon', esc(form.telefon.value)) +
+          row('E-mail', esc(form.email.value)) +
+          '</table>';
+
+        var shopHtml = wrap('Zákazník objednán k nám na prodejnu', infoTable +
+          '<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 14px">Zákazník zatím dostal jen zprávu, že rezervaci evidujeme. Kliknutím na tlačítko mu odešlete potvrzení termínu:</p>' +
+          '<div style="text-align:center;margin:4px 0 16px">' + button(confirmUrl, 'Potvrdit termín') + '</div>' +
+          '<div style="text-align:center;margin:0 0 8px"><a href="' + gcalUrl + '" style="color:' + MAGENTA + ';font-size:14px">Přidat do kalendáře</a></div>');
+
+        // odkaz na stranku, kde zamestnanec objednavku potvrdi (posle zakaznikovi finalni potvrzeni)
+        var payload = {
+          c: form.email.value, n: form.jmeno.value, d: dateCz, t: form.cas.value, p: form.popis.value, g: gcalUrl,
+          s: { name: shop.name, address: shop.address, hours: shop.hours, email: shop.email }
+        };
+        var payloadB64 = btoa(String.fromCharCode.apply(null, new TextEncoder().encode(JSON.stringify(payload))));
+        var confirmUrl = location.href.split('?')[0].replace(/\/objednat.*$/, '/potvrdit') + '?d=' + encodeURIComponent(payloadB64);
+
+        var custTable = '<table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #eee;border-radius:8px;border-collapse:separate;margin:0 0 20px">' +
+          row('Prodejna', esc(shop.name)) +
+          (shop.address ? row('Adresa', esc(shop.address)) : '') +
+          row('Den', esc(dateCz)) +
+          row('Čas', esc(form.cas.value) + ' hod.') +
+          (shop.hours ? row('Otevírací doba', esc(shop.hours)) : '') +
+          row('S čím pomůžeme', esc(form.popis.value)) +
+          '</table>';
+
+        var custHtml = wrap('Přijali jsme Vaši rezervaci',
+          '<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 18px">Dobrý den,<br>děkujeme za Vaši rezervaci. Předali jsme ji prodejně — jakmile termín potvrdí, přijde Vám e-mail s potvrzením.</p>' +
+          custTable +
+          '<p style="color:#444;font-size:14px;line-height:1.6;margin:0">' + esc(data.autoOutro).replace(/\n/g, '<br>') + '</p>');
+
+        function sendMail(params) {
+          return fetch('https://api.emailjs.com/api/v1.0/email/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ service_id: data.ejs.service, template_id: data.ejs.template, user_id: data.ejs.key, template_params: params })
+          }).then(function (r) {
+            if (!r.ok) return r.text().then(function (t) { var e = new Error('send failed'); e.detail = t || ('HTTP ' + r.status); throw e; });
+          });
+        }
+
+        sendMail({
+          to_email: shop.email,
+          reply_to: form.email.value,
+          subject: 'Zákazník objednán k nám na prodejnu',
+          html_body: shopHtml
+        }).then(function () {
+          // potvrzeni zakaznikovi — kdyz selze, objednavka uz je u prodejny, nezobrazujeme chybu
+          return sendMail({
+            to_email: form.email.value,
+            reply_to: shop.email,
+            subject: 'Potvrzení Vaší návštěvy prodejny T-Mobile',
+            html_body: custHtml
+          }).catch(function (err) { console.error('Potvrzení zákazníkovi se neodeslalo:', err && err.detail); });
+        })
+          .then(function () {
             document.getElementById('bs-summary').textContent = summary;
             document.getElementById('bs-gcal').href = gcalUrl;
             var ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Asistel//objednavka//CS\r\nBEGIN:VEVENT\r\n' +

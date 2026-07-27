@@ -1,0 +1,98 @@
+---
+// Stranka pro zamestnance: otevre se z emailu "Potvrdit termin" a po kliknuti
+// odesle zakaznikovi finalni potvrzeni pres EmailJS.
+import Base from '../layouts/Base.astro';
+import cfg from '../data/editable/objednat.json';
+---
+<Base title="Potvrzení objednávky — Asistel s.r.o" description="Interní stránka pro potvrzení objednávky zákazníka.">
+  <section class="section page-head">
+    <div class="container">
+      <span class="eyebrow">Interní</span>
+      <h1 class="grad-text">Potvrzení objednávky</h1>
+    </div>
+  </section>
+  <section class="section" style="padding-top:0">
+    <div class="container booking">
+      <div class="card" id="pv-card">
+        <p id="pv-info" class="muted">Načítám objednávku…</p>
+        <p style="margin-top:18px"><button class="btn btn-primary" id="pv-send" hidden>Odeslat potvrzení zákazníkovi</button></p>
+        <p class="muted" id="pv-done" hidden>Hotovo — zákazníkovi jsme odeslali potvrzení termínu. Tuhle stránku můžete zavřít.</p>
+        <p class="form-error muted" id="pv-err" hidden>Potvrzení se nepodařilo odeslat. Zkuste to znovu, nebo zákazníka kontaktujte přímo.</p>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" id="pv-data" set:html={JSON.stringify({ autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro, ejs: { service: cfg.emailjsService, template: cfg.emailjsTemplate, key: cfg.emailjsPublicKey } })} />
+  <script is:inline>
+    (function () {
+      var data = JSON.parse(document.getElementById('pv-data').textContent);
+      var info = document.getElementById('pv-info');
+      var sendBtn = document.getElementById('pv-send');
+      var o;
+      try {
+        var b64 = new URLSearchParams(location.search).get('d');
+        o = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(b64), function (c) { return c.charCodeAt(0); })));
+      } catch (e) {
+        info.textContent = 'Odkaz je neplatný nebo poškozený. Otevřete ho prosím znovu z e-mailu s objednávkou.';
+        return;
+      }
+
+      info.innerHTML = '';
+      var strong = document.createElement('strong');
+      strong.textContent = o.n + ' — ' + o.s.name + ', ' + o.d + ' v ' + o.t + ' hod.';
+      info.appendChild(strong);
+      info.appendChild(document.createElement('br'));
+      info.appendChild(document.createTextNode('Popis: ' + o.p + ' · E-mail: ' + o.c));
+      sendBtn.hidden = false;
+
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      var MAGENTA = '#E20074';
+      function row(label, value) {
+        return '<tr><td style="padding:10px 14px;border-bottom:1px solid #eee;color:#888;font-size:13px;white-space:nowrap">' + label + '</td>' +
+          '<td style="padding:10px 14px;border-bottom:1px solid #eee;color:#262626;font-size:14px">' + value + '</td></tr>';
+      }
+      sendBtn.addEventListener('click', function () {
+        sendBtn.disabled = true;
+        sendBtn.textContent = 'Odesílám…';
+        document.getElementById('pv-err').hidden = true;
+
+        var html = '<div style="margin:0 auto;max-width:560px;font-family:Arial,Helvetica,sans-serif;background:#ffffff;border:1px solid #eeeeee;border-radius:12px;overflow:hidden">' +
+          '<div style="background:' + MAGENTA + ';padding:18px 24px;color:#ffffff;font-size:18px;font-weight:bold">Asistel <span style="opacity:.7">|</span> T&#8209;Mobile partner</div>' +
+          '<div style="padding:24px"><h2 style="margin:0 0 16px;font-size:20px;color:#262626">Potvrzení Vaší návštěvy</h2>' +
+          '<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 18px">' + esc(data.autoIntro).replace(/\n/g, '<br>') + '</p>' +
+          '<table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #eee;border-radius:8px;border-collapse:separate;margin:0 0 20px">' +
+          row('Prodejna', esc(o.s.name)) +
+          (o.s.address ? row('Adresa', esc(o.s.address)) : '') +
+          row('Den', esc(o.d)) +
+          row('Čas', esc(o.t) + ' hod.') +
+          (o.s.hours ? row('Otevírací doba', esc(o.s.hours)) : '') +
+          '</table>' +
+          '<div style="text-align:center;margin:4px 0 20px"><a href="' + o.g + '" style="display:inline-block;background:' + MAGENTA + ';color:#ffffff;text-decoration:none;font-weight:bold;font-size:15px;padding:12px 28px;border-radius:999px">Přidat do Google Kalendáře</a></div>' +
+          '<p style="color:#444;font-size:14px;line-height:1.6;margin:0">' + esc(data.autoOutro).replace(/\n/g, '<br>') + '</p></div>' +
+          '<div style="padding:14px 24px;background:#fafafa;color:#999;font-size:12px">Asistel s.r.o &middot; partnersk&eacute; prodejny T&#8209;Mobile</div></div>';
+
+        fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            service_id: data.ejs.service, template_id: data.ejs.template, user_id: data.ejs.key,
+            template_params: { to_email: o.c, reply_to: o.s.email, subject: 'Potvrzení Vaší návštěvy prodejny T-Mobile', html_body: html }
+          })
+        }).then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          sendBtn.hidden = true;
+          document.getElementById('pv-done').hidden = false;
+        }).catch(function (err) {
+          console.error('Potvrzení se neodeslalo:', err);
+          document.getElementById('pv-err').hidden = false;
+          sendBtn.disabled = false;
+          sendBtn.textContent = 'Odeslat potvrzení zákazníkovi';
+        });
+      });
+    })();
+  </script>
+</Base>
