@@ -1,8 +1,9 @@
 import { defineConfig } from 'astro/config';
 
-const isNetlify = process.env.NETLIFY === 'true';
+// GitHub Pages běží pod /asistel, všude jinde (Netlify, Cloudflare, lokál) je web v kořeni.
+const isGithubPages = process.env.GITHUB_ACTIONS === 'true';
 
 export default defineConfig({
-  site: isNetlify ? process.env.URL : 'https://tomasdvoji.github.io',
-  base: isNetlify ? '/' : '/asistel',
+  site: isGithubPages ? 'https://tomasdvoji.github.io' : process.env.URL,
+  base: isGithubPages ? '/asistel' : '/',
 });

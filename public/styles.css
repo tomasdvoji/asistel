@@ -703,6 +703,77 @@ img.avatar { object-fit: cover; }
   color: var(--text-dim);
   font-size: 0.9rem;
 }
+/* galerie prodejen */
+.shop-photo-btn {
+  position: relative;
+  width: 100%;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  border-bottom: 1px solid var(--border);
+}
+.shop-photo-btn img { transition: transform 0.4s var(--ease); }
+.shop-photo-btn:hover img { transform: scale(1.05); }
+.shop-photo-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.shop-photo-count {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  pointer-events: none;
+}
+.shop-lb-content.lightbox-content {
+  aspect-ratio: auto;
+  background: transparent;
+  border: 0;
+  display: block;
+  text-align: center;
+}
+.shop-lb-content img {
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: 78vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  display: inline-block;
+}
+.shop-lb-arrow {
+  position: fixed; /* u kraje obrazovky, ne u fotky – ať jsou vždy na stejném místě */
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  background: rgba(226, 0, 116, 0.85);
+  color: #fff;
+  cursor: pointer;
+  font-size: 2rem;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  transition: background 0.2s var(--ease), transform 0.2s var(--ease);
+  z-index: 3;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+}
+.shop-lb-arrow:hover { background: rgba(226, 0, 116, 1); transform: translateY(-50%) scale(1.08); }
+.shop-lb-arrow[hidden] { display: none; }
+.shop-lb-prev { left: 24px; }
+.shop-lb-next { right: 24px; }
+@media (max-width: 640px) {
+  .shop-lb-arrow { width: 44px; height: 44px; font-size: 1.5rem; }
+  .shop-lb-prev { left: 10px; }
+  .shop-lb-next { right: 10px; }
+}
+
 .lightbox-close {
   position: absolute;
   top: -14px;

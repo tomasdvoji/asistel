@@ -1,9 +1,18 @@
 ---
+import fs from 'node:fs';
 import Base from '../layouts/Base.astro';
 import { media } from '../media';
 import shops from '../data/editable/shops.json';
 const baseRaw = import.meta.env.BASE_URL;
 const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
+// Galerie prodejen: fotky se čtou při buildu z public/prodejny/<id>/
+const galleryFor = (id: string): string[] => {
+  const dir = `public/prodejny/${id}`;
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map((f) => `${base}/prodejny/${id}/${f}`);
+};
 ---
 <Base title="Naše prodejny — Asistel s.r.o" description={`Síť ${shops.items.length} prodejen Asistel po celé České republice. Navštivte naši prodejnu a poradíme vám osobně s tarify, telefony, internetem i příslušenstvím.`}>
   <section class="section page-head">
@@ -17,17 +26,94 @@ const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="shops-grid">
-        {shops.items.map((s) => (
+        {shops.items.map((s) => {
+          const gallery = galleryFor(s.id);
+          return (
           <article class="card shop-card" data-reveal id={s.id}>
-            <div class="shop-photo"><img src={media(s.photo)} alt={`Prodejna ${s.name}`} loading="lazy" /></div>
+            {gallery.length > 0 ? (
+              <button class="shop-photo shop-photo-btn" type="button" data-gallery={JSON.stringify(gallery)} data-shop-name={s.name} aria-label={`Zobrazit fotky prodejny ${s.name}`}>
+                <img src={gallery[0]} alt={`Prodejna ${s.name}`} loading="lazy" />
+                <span class="shop-photo-count">📷 {gallery.length}</span>
+              </button>
+            ) : (
+              <div class="shop-photo"><img src={media(s.photo)} alt={`Prodejna ${s.name}`} loading="lazy" /></div>
+            )}
             <h3>{s.name}</h3>
             <p class="muted">{s.address}</p>
             <p class="shop-hours">{s.hours}</p>
             {s.phone && <p class="shop-phone"><a href={`tel:+420${s.phone.replace(/\s/g, '')}`}>{s.phone}</a></p>}
             <p class="shop-book"><a class="btn btn-ghost" href={`${base}/objednat?prodejna=${s.id}`}>Objednat se</a></p>
           </article>
-        ))}
+          );
+        })}
       </div>
     </div>
   </section>
+
+  <div class="lightbox" id="shop-lightbox" hidden>
+    <div class="lightbox-body" role="dialog" aria-modal="true" aria-label="Fotky prodejny">
+      <div class="lightbox-content shop-lb-content"></div>
+      <button class="shop-lb-arrow shop-lb-prev" type="button" aria-label="Předchozí fotka">‹</button>
+      <button class="shop-lb-arrow shop-lb-next" type="button" aria-label="Další fotka">›</button>
+      <p class="lightbox-cap"><span class="shop-lb-name"></span> · <span class="shop-lb-counter"></span></p>
+      <button class="lightbox-close" type="button" aria-label="Zavřít">✕</button>
+    </div>
+  </div>
+
+  <script>
+    const lb = document.getElementById('shop-lightbox')!;
+    const content = lb.querySelector('.shop-lb-content')!;
+    const nameEl = lb.querySelector('.shop-lb-name')!;
+    const counterEl = lb.querySelector('.shop-lb-counter')!;
+    const prevBtn = lb.querySelector<HTMLButtonElement>('.shop-lb-prev')!;
+    const nextBtn = lb.querySelector<HTMLButtonElement>('.shop-lb-next')!;
+    const closeBtn = lb.querySelector<HTMLButtonElement>('.lightbox-close')!;
+    let photos: string[] = [];
+    let idx = 0;
+    let lastFocused: HTMLElement | null = null;
+
+    function show() {
+      content.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = photos[idx];
+      img.alt = '';
+      content.appendChild(img);
+      counterEl.textContent = `${idx + 1} / ${photos.length}`;
+      const single = photos.length < 2;
+      prevBtn.hidden = single;
+      nextBtn.hidden = single;
+    }
+    function open(btn: HTMLElement) {
+      photos = JSON.parse(btn.dataset.gallery || '[]');
+      if (!photos.length) return;
+      nameEl.textContent = btn.dataset.shopName || '';
+      idx = 0;
+      lastFocused = btn;
+      lb.hidden = false;
+      show();
+      closeBtn.focus();
+    }
+    function close() {
+      lb.hidden = true;
+      lastFocused?.focus();
+    }
+    function step(d: number) {
+      idx = (idx + d + photos.length) % photos.length;
+      show();
+    }
+
+    document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((btn) => {
+      btn.addEventListener('click', () => open(btn));
+    });
+    prevBtn.addEventListener('click', () => step(-1));
+    nextBtn.addEventListener('click', () => step(1));
+    closeBtn.addEventListener('click', close);
+    lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+    document.addEventListener('keydown', (e) => {
+      if (lb.hidden) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') step(-1);
+      if (e.key === 'ArrowRight') step(1);
+    });
+  </script>
 </Base>
