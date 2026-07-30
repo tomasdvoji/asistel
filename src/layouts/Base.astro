@@ -15,12 +15,6 @@ const { title, description } = Astro.props;
 <head>
   <meta charset="UTF-8">
   <script>document.documentElement.classList.add("js")</script>
-  <script is:inline>
-    // Aplikuje ulozenou verzi nadpisu jeste pred vykreslenim (bez probliknuti)
-    (function () {
-      if (localStorage.getItem('asistel-nadpisy') === 'bile') document.documentElement.classList.add('headings-white');
-    })();
-  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{title}</title>
   <meta name="description" content={description}>
@@ -70,30 +64,5 @@ const { title, description } = Astro.props;
   </footer>
 
   <script src={base + "/script.js"} is:inline></script>
-  <script is:inline>
-    // Plovouci prepinac verzi nadpisu (fialova / bila)
-    (function () {
-      var box = document.createElement('div');
-      box.className = 'version-toggle';
-      [['fialove', 'Magenta'], ['bile', 'Tmavé']].forEach(function (v) {
-        var b = document.createElement('button');
-        b.type = 'button';
-        b.textContent = v[1];
-        b.dataset.v = v[0];
-        b.addEventListener('click', function () {
-          localStorage.setItem('asistel-nadpisy', v[0]);
-          document.documentElement.classList.toggle('headings-white', v[0] === 'bile');
-          mark();
-        });
-        box.appendChild(b);
-      });
-      function mark() {
-        var cur = localStorage.getItem('asistel-nadpisy') === 'bile' ? 'bile' : 'fialove';
-        box.querySelectorAll('button').forEach(function (b) { b.classList.toggle('active', b.dataset.v === cur); });
-      }
-      mark();
-      document.body.appendChild(box);
-    })();
-  </script>
 </body>
 </html>

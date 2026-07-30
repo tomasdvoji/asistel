@@ -70,36 +70,6 @@ h3 { font-size: 1.15rem; font-weight: 600; }
   color: var(--accent);
 }
 
-/* Tmava verze nadpisu — prepina se plovoucim tlacitkem (viz Base.astro) */
-html.headings-white .grad-text {
-  color: var(--text);
-}
-
-/* Plovouci prepinac verzi nadpisu */
-.version-toggle {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  z-index: 999;
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--bg-raised);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
-}
-.version-toggle button {
-  border: 0;
-  background: transparent;
-  color: var(--text-dim);
-  font: 600 0.8rem var(--font);
-  padding: 6px 14px;
-  border-radius: 999px;
-  cursor: pointer;
-}
-.version-toggle button.active { background: var(--accent); color: #fff; }
-
 .muted { color: var(--text-dim); }
 
 /* ---------- buttons ---------- */
@@ -305,7 +275,7 @@ html.headings-white .grad-text {
 }
 
 /* text na fotce — bily, at je citelny */
-.hero .grad-text, html.headings-white .hero .grad-text { color: #fff; }
+.hero .grad-text { color: #fff; }
 .hero h1 { text-shadow: 0 2px 24px rgba(0, 0, 0, 0.45); }
 .hero .hero-sub { color: rgba(255, 255, 255, 0.88); }
 .hero .partner-badge { color: rgba(255, 255, 255, 0.85); border-color: rgba(255, 255, 255, 0.35); }
@@ -756,14 +726,22 @@ img.avatar { object-fit: cover; }
   background: rgba(226, 0, 116, 0.85);
   color: #fff;
   cursor: pointer;
-  font-size: 2rem;
-  line-height: 1;
   display: grid;
   place-items: center;
   transition: background 0.2s var(--ease), transform 0.2s var(--ease);
   z-index: 3;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
 }
+/* sipka kreslena pres CSS – presne vycentrovana v kolecku */
+.chev {
+  width: 14px;
+  height: 14px;
+  border-right: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  border-radius: 2px;
+}
+.chev-left { transform: rotate(135deg) translate(-2px, -2px); }
+.chev-right { transform: rotate(-45deg) translate(-2px, -2px); }
 .shop-lb-arrow:hover { background: rgba(226, 0, 116, 1); transform: translateY(-50%) scale(1.08); }
 .shop-lb-arrow[hidden] { display: none; }
 .shop-lb-prev { left: 24px; }
