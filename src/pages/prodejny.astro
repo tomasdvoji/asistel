@@ -105,9 +105,25 @@ const galleryFor = (id: string): string[] => {
     document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((btn) => {
       btn.addEventListener('click', () => open(btn));
     });
-    // Fotky na vysku: posunout orez niz, aby nahled neukazoval jen strop
+    // Nahled prodejny: fotka na vysku ukazuje hlavne strop - radeji pouzit
+    // prvni fotku na sirku z galerie; kdyz zadna neni, aspon posunout orez niz.
     document.querySelectorAll<HTMLImageElement>('.shop-photo img').forEach((img) => {
-      const fix = () => { if (img.naturalHeight > img.naturalWidth) img.style.objectPosition = 'center 75%'; };
+      const fix = () => {
+        if (img.naturalHeight <= img.naturalWidth) return;
+        img.style.objectPosition = 'center 75%';
+        const gallery: string[] = JSON.parse(img.closest<HTMLElement>('[data-gallery]')?.dataset.gallery || '[]');
+        gallery.filter((src) => src !== img.src).forEach((src) => {
+          const probe = new Image();
+          probe.onload = () => {
+            if (probe.naturalWidth > probe.naturalHeight && img.dataset.swapped !== '1') {
+              img.dataset.swapped = '1';
+              img.src = src;
+              img.style.objectPosition = '';
+            }
+          };
+          probe.src = src;
+        });
+      };
       img.complete ? fix() : img.addEventListener('load', fix);
     });
     prevBtn.addEventListener('click', () => step(-1));
