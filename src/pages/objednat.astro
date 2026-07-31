@@ -152,10 +152,6 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
           row('E-mail', esc(form.email.value)) +
           '</table>';
 
-        var shopHtml = wrap('Zákazník objednán k nám na prodejnu', infoTable +
-          '<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 14px">Zákazník zatím dostal jen zprávu, že rezervaci evidujeme. Kliknutím na tlačítko mu odešlete potvrzení termínu:</p>' +
-          '<div style="text-align:center;margin:4px 0 16px">' + button(confirmUrl, 'Potvrdit termín') + '</div>' +
-          '<div style="text-align:center;margin:0 0 8px"><a href="' + gcalUrl + '" style="color:' + MAGENTA + ';font-size:14px">Přidat do kalendáře</a></div>');
 
         // odkaz na stranku, kde zamestnanec objednavku potvrdi (posle zakaznikovi finalni potvrzeni)
         var payload = {
@@ -164,6 +160,12 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
         };
         var payloadB64 = btoa(String.fromCharCode.apply(null, new TextEncoder().encode(JSON.stringify(payload))));
         var confirmUrl = location.href.split('?')[0].replace(/\/objednat.*$/, '/potvrdit') + '?d=' + encodeURIComponent(payloadB64);
+
+        var shopHtml = wrap('Zákazník objednán k nám na prodejnu', infoTable +
+          '<p style="color:#444;font-size:14px;line-height:1.6;margin:0 0 14px">Zákazník zatím dostal jen zprávu, že rezervaci evidujeme. Kliknutím na tlačítko mu odešlete potvrzení termínu:</p>' +
+          '<div style="text-align:center;margin:4px 0 16px">' + button(confirmUrl, 'Potvrdit termín') + '</div>' +
+          '<div style="text-align:center;margin:0 0 8px"><a href="' + gcalUrl + '" style="color:' + MAGENTA + ';font-size:14px">Přidat do kalendáře</a></div>');
+
 
         var custTable = '<table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #eee;border-radius:8px;border-collapse:separate;margin:0 0 20px">' +
           row('Prodejna', esc(shop.name)) +

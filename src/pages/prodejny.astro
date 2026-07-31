@@ -36,7 +36,7 @@ const galleryFor = (id: string): string[] => {
                 <span class="shop-photo-count">📷 {gallery.length}</span>
               </button>
             ) : (
-              <div class="shop-photo"><img src={media(s.photo)} alt={`Prodejna ${s.name}`} loading="lazy" /></div>
+              <div class="shop-photo">{s.photo ? <img src={media(s.photo)} alt={`Prodejna ${s.name}`} loading="lazy" /> : <span>Fotky připravujeme</span>}</div>
             )}
             <h3>{s.name}</h3>
             <p class="muted">{s.address}</p>
