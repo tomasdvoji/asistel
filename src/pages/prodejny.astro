@@ -105,6 +105,11 @@ const galleryFor = (id: string): string[] => {
     document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((btn) => {
       btn.addEventListener('click', () => open(btn));
     });
+    // Fotky na vysku: posunout orez niz, aby nahled neukazoval jen strop
+    document.querySelectorAll<HTMLImageElement>('.shop-photo img').forEach((img) => {
+      const fix = () => { if (img.naturalHeight > img.naturalWidth) img.style.objectPosition = 'center 75%'; };
+      img.complete ? fix() : img.addEventListener('load', fix);
+    });
     prevBtn.addEventListener('click', () => step(-1));
     nextBtn.addEventListener('click', () => step(1));
     closeBtn.addEventListener('click', close);
