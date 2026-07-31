@@ -105,6 +105,31 @@ const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
     </div>
   </section>
 
+  <section class="section" id="kariera">
+    <div class="container">
+      <div class="career-panel" data-reveal>
+        <span class="eyebrow">{home.careerEyebrow}</span>
+        <h2 class="grad-text">{home.careerHeading}</h2>
+        <p>{home.careerPara1}</p>
+        <p class="muted" style="margin-top:12px">{home.careerPara2}</p>
+        <p style="margin-top:32px"><a class="btn btn-primary" href={base + "/kariera"}>{home.careerBtn}</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="teambuildingy">
+    <div class="container split">
+      <div data-reveal>
+        <h2 class="grad-text">{home.tbHeading}</h2>
+        <p class="muted">{home.tbLead}</p>
+        <p style="margin-top:28px"><a class="btn btn-ghost" href={base + "/album"}>{home.tbBtn}</a></p>
+      </div>
+      <div class="tb-preview" aria-hidden="true">
+        {tbPreview.map((p) => <img class="tb-tile" src={media(p.image)} alt="" loading="lazy" data-reveal />)}
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="tym">
     <div class="container">
       <div class="section-head" data-reveal>
@@ -123,31 +148,6 @@ const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
         ))}
       </div>
       <p style="margin-top:32px;text-align:center"><a class="btn btn-ghost" href={base + "/tym"}>{home.teamBtn}</a></p>
-    </div>
-  </section>
-
-  <section class="section" id="teambuildingy">
-    <div class="container split">
-      <div data-reveal>
-        <h2 class="grad-text">{home.tbHeading}</h2>
-        <p class="muted">{home.tbLead}</p>
-        <p style="margin-top:28px"><a class="btn btn-ghost" href={base + "/album"}>{home.tbBtn}</a></p>
-      </div>
-      <div class="tb-preview" aria-hidden="true">
-        {tbPreview.map((p) => <img class="tb-tile" src={media(p.image)} alt="" loading="lazy" data-reveal />)}
-      </div>
-    </div>
-  </section>
-
-  <section class="section" id="kariera">
-    <div class="container">
-      <div class="career-panel" data-reveal>
-        <span class="eyebrow">{home.careerEyebrow}</span>
-        <h2 class="grad-text">{home.careerHeading}</h2>
-        <p>{home.careerPara1}</p>
-        <p class="muted" style="margin-top:12px">{home.careerPara2}</p>
-        <p style="margin-top:32px"><a class="btn btn-primary" href={base + "/kariera"}>{home.careerBtn}</a></p>
-      </div>
     </div>
   </section>
 </Base>
