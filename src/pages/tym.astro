@@ -22,8 +22,6 @@ const initials = (name: string) => name.split(' ').map((w) => w[0]).join('');
               : <div class="avatar" aria-hidden="true">{initials(m.name)}</div>}
             <h3>{m.name}</h3>
             <p class="muted">{m.role}</p>
-            {m.email && <p class="team-mail"><a href={`mailto:${m.email}`}>{m.email}</a></p>}
-            {m.phone && <p class="team-mail"><a href={`tel:+420${m.phone.replace(/\s/g, '')}`}>{m.phone}</a></p>}
           </article>
         ))}
       </div>

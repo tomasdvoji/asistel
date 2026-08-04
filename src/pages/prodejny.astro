@@ -33,7 +33,7 @@ const galleryFor = (id: string): string[] => {
             {gallery.length > 0 ? (
               <button class="shop-photo shop-photo-btn" type="button" data-gallery={JSON.stringify(gallery)} data-shop-name={s.name} aria-label={`Zobrazit fotky prodejny ${s.name}`}>
                 <img src={gallery[0]} alt={`Prodejna ${s.name}`} loading="lazy" />
-                <span class="shop-photo-count">📷 {gallery.length}</span>
+                {gallery.length > 1 && <span class="shop-photo-count">📷 {gallery.length}</span>}
               </button>
             ) : (
               <div class="shop-photo">{s.photo ? <img src={media(s.photo)} alt={`Prodejna ${s.name}`} loading="lazy" /> : <span>Fotky připravujeme</span>}</div>
