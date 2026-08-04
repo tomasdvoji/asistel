@@ -3,16 +3,82 @@
   "title": "Za každou prodejnou stojí skuteční lidé.",
   "lead": "Nejsme bezejmenné call centrum. Jsme tým konkrétních lidí – každý se jménem, svou specializací a svými zákazníky, které zná. Podívejte se, kdo stojí za našimi prodejnami.",
   "items": [
-    { "name": "Milan Pecka", "role": "Regionální manažer", "photo": "" },
-    { "name": "Ilona Jindráková", "role": "Regionální manažerka", "photo": "" },
-    { "name": "Lucie Petirová", "role": "Regionální manažerka", "photo": "" },
-    { "name": "Lukáš Hornych", "role": "Vedoucí prodejny · Rychnov nad Kněžnou", "photo": "" },
-    { "name": "Lukáš Maršoun", "role": "Vedoucí prodejny · Benešov", "photo": "" },
-    { "name": "Eliška Nováková", "role": "Vedoucí prodejny · Vrchlabí", "photo": "" },
-    { "name": "Kateřina Salabová", "role": "Vedoucí prodejny · Turnov", "photo": "" },
-    { "name": "Leoš Barák", "role": "Vedoucí prodejny · Třebíč", "photo": "" },
-    { "name": "Milan Pecka", "role": "Vedoucí prodejny · Jindřichův Hradec", "photo": "" },
-    { "name": "Jana Elraei Kozáková", "role": "Vedoucí prodejny · Trutnov", "photo": "" },
-    { "name": "Leona Pomahačová", "role": "Vedoucí prodejny · Náchod", "photo": "" }
+    {
+      "name": "Milan Pecka",
+      "role": "Regionální manažer",
+      "photo": "",
+      "email": "",
+      "phone": ""
+    },
+    {
+      "name": "Ilona Jindráková",
+      "role": "Regionální manažerka",
+      "photo": "",
+      "email": "",
+      "phone": ""
+    },
+    {
+      "name": "Lucie Petirová",
+      "role": "Regionální manažerka",
+      "photo": "",
+      "email": "",
+      "phone": ""
+    },
+    {
+      "name": "Lukáš Hornych",
+      "role": "Vedoucí prodejny · Rychnov nad Kněžnou",
+      "photo": "",
+      "email": "rychnov@asistel.cz",
+      "phone": "605 113 377"
+    },
+    {
+      "name": "Lukáš Maršoun",
+      "role": "Vedoucí prodejny · Benešov",
+      "photo": "",
+      "email": "benesov@asistel.cz",
+      "phone": "604 727 323"
+    },
+    {
+      "name": "Eliška Nováková",
+      "role": "Vedoucí prodejny · Vrchlabí",
+      "photo": "",
+      "email": "vrchlabi@asistel.cz",
+      "phone": "603 512 517"
+    },
+    {
+      "name": "Kateřina Salabová",
+      "role": "Vedoucí prodejny · Turnov",
+      "photo": "",
+      "email": "",
+      "phone": ""
+    },
+    {
+      "name": "Leoš Barák",
+      "role": "Vedoucí prodejny · Třebíč",
+      "photo": "",
+      "email": "trebic@asistel.cz",
+      "phone": "737 828 545"
+    },
+    {
+      "name": "Milan Pecka",
+      "role": "Vedoucí prodejny · Jindřichův Hradec",
+      "photo": "",
+      "email": "jindrichuvhradec@asistel.cz",
+      "phone": "734 206 169"
+    },
+    {
+      "name": "Jana Elraei Kozáková",
+      "role": "Vedoucí prodejny · Trutnov",
+      "photo": "",
+      "email": "",
+      "phone": ""
+    },
+    {
+      "name": "Leona Pomahačová",
+      "role": "Vedoucí prodejny · Náchod",
+      "photo": "",
+      "email": "nachod1@asistel.cz",
+      "phone": "603 819 417"
+    }
   ]
 }

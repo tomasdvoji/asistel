@@ -167,6 +167,8 @@ collections:
               - { name: "name", label: "Jméno", widget: "string" }
               - { name: "role", label: "Role a prodejna", widget: "string", hint: "Např. Vedoucí prodejny · Praha-Dejvice" }
               - { name: "photo", label: "Fotka", widget: "image", required: false, hint: "Když fotku nenahrajete, zobrazí se iniciály." }
+              - { name: "email", label: "E-mail", widget: "string", required: false, hint: "Zobrazí se na stránce Tým." }
+              - { name: "phone", label: "Telefon", widget: "string", required: false, hint: "Zobrazí se na stránce Tým." }
 
   # ---------- Fotoalbum ----------
   - name: "album"

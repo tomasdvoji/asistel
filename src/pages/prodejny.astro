@@ -42,6 +42,7 @@ const galleryFor = (id: string): string[] => {
             <p class="muted">{s.address}</p>
             <p class="shop-hours">{s.hours}</p>
             {s.phone && <p class="shop-phone"><a href={`tel:+420${s.phone.replace(/\s/g, '')}`}>{s.phone}</a></p>}
+            {s.email && <p class="shop-phone"><a href={`mailto:${s.email}`}>{s.email}</a></p>}
             <p class="shop-book"><a class="btn btn-ghost" href={`${base}/objednat?prodejna=${s.id}`}>Objednat se</a></p>
           </article>
           );
