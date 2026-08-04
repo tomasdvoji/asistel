@@ -1,0 +1,112 @@
+================================================================
+KOSTRA WEBU — šablona podle webů Asistel / Alerta
+Statický firemní web s prodejnami, týmem, objednávkami a administrací
+================================================================
+
+TECHNOLOGIE
+-----------
+- Astro 4 (statický generátor, výstup = čisté HTML/CSS/JS, žádný server)
+- Žádný framework navíc, žádná databáze
+- Hosting: GitHub Pages (zdarma, automatický deploy přes GitHub Actions),
+  připraveno i pro Cloudflare Workers (wrangler.jsonc) a Netlify
+- Administrace obsahu: Decap CMS na /admin (přihlášení GitHub účtem,
+  změny se commitují do repozitáře a web se sám přegeneruje)
+- Odesílání e-mailů: EmailJS (přímo z prohlížeče, bez serveru;
+  zdarma 200 e-mailů/měsíc)
+
+STRUKTURA PROJEKTU
+------------------
+package.json            astro + skripty dev/build/preview
+astro.config.mjs        base "/<repo>" jen pro GitHub Pages, jinde "/"
+wrangler.jsonc          deploy na Cloudflare Workers (assets: ./dist)
+.github/workflows/      deploy.yml — build a nasazení na GitHub Pages
+.claude/launch.json     dev server pro lokální náhled
+
+public/
+  styles.css            všechny styly (design tokeny v :root)
+  script.js             sdílené interakce (menu, reveal animace)
+  admin/                Decap CMS (index.html + config.yml)
+  uploads/              obrázky nahrané přes administraci
+  prodejny/<id>/N.jpeg  fotogalerie poboček (číslované soubory)
+
+src/
+  layouts/Base.astro    společná kostra: hlavička, navigace, patička
+  media.ts              helper na cesty k obrázkům (base prefix)
+  data/editable/        VŠECHEN editovatelný obsah v JSON:
+    site.json           název firmy, slogan, adresa, IČO/DIČ, copyright
+    home.json           texty úvodní stránky (hero, sekce, tlačítka)
+    shops.json          pobočky: id, název, adresa, hodiny, e-mail,
+                        telefon, pozice na mapě (mapX/mapY)
+    team.json           lidé: jméno, role, fotka
+    kariera.json        inzerát: oddíly s odrážkami, kontakty
+    album.json          fotky z akcí s popisky
+    objednat.json       texty formuláře + EmailJS klíče + centrální e-mail
+  pages/
+    index.astro         landing: hero → pobočky (SVG mapa ČR s piny)
+                        → služby → kariéra → teambuildingy → tým
+    prodejny.astro      karty poboček s fotogalerií (lightbox se šipkami),
+                        tel: a mailto: odkazy, tlačítko Objednat se
+    tym.astro           mřížka lidí (fotka nebo iniciály)
+    album.astro         fotoalbum s lightboxem
+    kariera.astro       inzerát + odkaz na prace.cz
+    objednat.astro      objednávkový formulář (viz níže)
+    potvrdit.astro      interní stránka pro potvrzení objednávky
+
+KLÍČOVÉ FUNKCE
+--------------
+1) OBJEDNÁVKOVÝ FORMULÁŘ (objednat.astro)
+   - výběr pobočky (předvyplnění přes ?prodejna=id), datum (min. dnešek),
+     čas po půlhodinách, popis, jméno, telefon, e-mail
+   - po odeslání přes EmailJS odejdou 2 e-maily (HTML šablony ve firemních
+     barvách skládané v JS):
+     a) POBOČCE — tabulka s údaji + tlačítko "Potvrdit termín"
+        (odkaz na /potvrdit?d=<base64 payload s objednávkou>)
+     b) ZÁKAZNÍKOVI — "rezervaci evidujeme", souhrn návštěvy
+   - pobočka bez vlastního e-mailu → objednávka jde na centrální
+     fallbackEmail z objednat.json
+   - úspěch: souhrn + "Přidat do Google Kalendáře" + .ics ke stažení
+   - chyba: hláška, formulář zůstává vyplněný (data se neztratí)
+   - e-maily poboček nejsou v HTML přímo (base64) — ochrana před spam boty
+   - všechny vstupy uživatele se v e-mailech escapují (XSS)
+
+2) POTVRZENÍ OBJEDNÁVKY (potvrdit.astro)
+   - zaměstnanec otevře odkaz z e-mailu, vidí souhrn objednávky
+   - kliknutím odešle zákazníkovi finální potvrzení termínu (EmailJS)
+
+3) FOTOGALERIE POBOČEK (prodejny.astro)
+   - fotky se při buildu načtou ze public/prodejny/<id>/ (fs.readdirSync)
+   - náhled = první fotka; když je na výšku, vezme se první na šířku
+     (nebo se aspoň posune ořez níž, aby nebyl vidět jen strop)
+   - lightbox: šipky u okrajů, počítadlo, ovládání klávesnicí (Esc/šipky),
+     u jediné fotky se šipky ani odznak počtu nezobrazují
+
+4) SVG MAPA ČR (index.astro)
+   - viewBox 600x350, piny poboček z shops.json (mapX/mapY),
+     klik na pin vede na kartu pobočky
+
+5) ADMINISTRACE (/admin, Decap CMS)
+   - config.yml mapuje všechny JSON soubory na formuláře
+   - kolegové edituji texty, pobočky, tým i fotky bez znalosti kódu
+   - každá změna = commit do GitHubu = automatický redeploy
+
+DESIGN
+------
+- tmavý "spotlight" styl, akcentní barva magenta (#E20074, T-Mobile)
+- fonty Inter + Outfit (Google Fonts)
+- design tokeny (barvy, radiusy, stíny) v :root v styles.css
+- reveal animace při scrollu (data-reveal), karty s hover efekty
+- responzivní: hamburger menu, gridy se lámou na mobilu
+
+CHECKLIST PŘI ZALOŽENÍ NOVÉHO PROJEKTU Z TÉTO KOSTRY
+----------------------------------------------------
+1. Zkopírovat repo, smazat public/prodejny, public/uploads, dist
+2. Projít src/data/editable/*.json a nahradit obsah (název, IČO, adresa,
+   pobočky, lidé, texty) — nic jiného se editovat nemusí
+3. astro.config.mjs: nastavit base na název nového repa (GitHub Pages)
+4. wrangler.jsonc: přejmenovat projekt
+5. public/admin/config.yml: přepsat repo na nový GitHub repozitář
+6. EmailJS: založit službu, vyplnit service/template/key v objednat.json,
+   nastavit Allowed Origins na doménu webu (ochrana kvóty)
+7. Grep na název staré firmy (case-insensitive) — musí být 0 výskytů
+8. Fotky poboček do public/prodejny/<id>/1.jpeg, 2.jpeg…
+9. npm install && npm run build — ověřit, pushnout, zapnout GitHub Pages
