@@ -1,9 +1,7 @@
 import { defineConfig } from 'astro/config';
 
-// GitHub Pages běží pod /asistel, všude jinde (Netlify, Cloudflare, lokál) je web v kořeni.
-const isGithubPages = process.env.GITHUB_ACTIONS === 'true';
-
+// Web běží na vlastní doméně asistel.alerta.cz (GitHub Pages s CNAME), všude v kořeni.
 export default defineConfig({
-  site: isGithubPages ? 'https://tomasdvoji.github.io' : process.env.URL,
-  base: isGithubPages ? '/asistel' : '/',
+  site: 'https://asistel.alerta.cz',
+  base: '/',
 });
