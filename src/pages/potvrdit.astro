@@ -84,7 +84,7 @@ import cfg from '../data/editable/objednat.json';
           })
         }).then(function (r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
-          sendBtn.hidden = true;
+          sendBtn.style.display = 'none';
           document.getElementById('pv-done').hidden = false;
         }).catch(function (err) {
           console.error('Potvrzení se neodeslalo:', err);
