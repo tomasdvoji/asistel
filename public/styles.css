@@ -539,10 +539,13 @@ img.avatar { object-fit: cover; }
 .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
 .form-field { margin-bottom: 18px; }
 .form-field label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 6px; color: var(--text-dim); }
+.form-field { min-width: 0; }
 .form-field input,
 .form-field select,
 .form-field textarea {
   width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 11px 14px;
   border-radius: 10px;
   border: 1px solid var(--border);
