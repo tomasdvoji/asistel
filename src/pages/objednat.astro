@@ -91,6 +91,39 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
       if (pre) form.prodejna.value = pre;
       form.datum.min = new Date().toISOString().slice(0, 10);
 
+      // Obsazenost terminu: max 2 rezervace na prodejnu a cas (Cloudflare Worker)
+      var API = 'https://rezervace.webshowcase-tomas.workers.dev';
+      var SITE = 'asistel';
+      function slotKey() { return SITE + ':' + form.prodejna.value + ':' + form.datum.value; }
+      function refreshSlots() {
+        if (!form.datum.value) return;
+        fetch(API + '/slots?key=' + encodeURIComponent(slotKey()))
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            Array.prototype.forEach.call(form.cas.options, function (o) {
+              var full = (d[o.value] || 0) >= 2;
+              o.disabled = full;
+              o.textContent = o.value + (full ? ' — obsazeno' : '');
+            });
+            if (form.cas.selectedOptions[0] && form.cas.selectedOptions[0].disabled) {
+              var free = Array.prototype.find.call(form.cas.options, function (o) { return !o.disabled; });
+              if (free) form.cas.value = free.value;
+            }
+          })
+          .catch(function () {}); // kdyz sluzba nejede, formular funguje dal
+      }
+      function reserveSlot() {
+        return fetch(API + '/book', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key: slotKey(), time: form.cas.value })
+        }).then(function (r) {
+          if (r.status === 409) { var e = new Error('slot_full'); e.slotFull = true; throw e; }
+        }).catch(function (e) { if (e.slotFull) throw e; }); // vypadek sluzby rezervaci neblokuje
+      }
+      form.prodejna.addEventListener('change', refreshSlots);
+      form.datum.addEventListener('change', refreshSlots);
+
       form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (!form.reportValidity()) return;
@@ -191,11 +224,13 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
           });
         }
 
-        sendMail({
+        reserveSlot().then(function () {
+        return sendMail({
           to_email: shop.email,
           reply_to: form.email.value,
           subject: 'Zákazník objednán k nám na prodejnu',
           html_body: shopHtml
+        });
         }).then(function () {
           // potvrzeni zakaznikovi — kdyz selze, objednavka uz je u prodejny, nezobrazujeme chybu
           return sendMail({
@@ -219,6 +254,14 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
             window.scrollTo({ top: 0, behavior: 'smooth' });
           })
           .catch(function (err) {
+            if (err && err.slotFull) {
+              errEl.textContent = 'Tento čas je už bohužel plně obsazený. Vyberte si prosím jiný termín.';
+              errEl.hidden = false;
+              btn.disabled = false;
+              btn.textContent = 'Objednat se';
+              refreshSlots();
+              return;
+            }
             console.error('Objednávka se neodeslala:', err && err.detail ? err.detail : err);
             errEl.textContent = errEl.dataset.base + (err && err.detail ? ' [' + err.detail + ']' : '');
             errEl.hidden = false;

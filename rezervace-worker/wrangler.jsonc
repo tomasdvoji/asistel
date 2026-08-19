@@ -1,0 +1,9 @@
+// Rezervacni pocitadlo pro objednavkove formulare (alerta.cz + asistel.cz)
+{
+  "name": "rezervace",
+  "main": "index.js",
+  "compatibility_date": "2026-07-01",
+  "kv_namespaces": [
+    { "binding": "BOOKINGS", "id": "8762d1ffe9dc4c2887cc1245719d0f9f" }
+  ]
+}
