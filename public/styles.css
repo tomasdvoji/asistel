@@ -562,6 +562,17 @@ img.avatar { object-fit: cover; }
 }
 .form-field select option { background: var(--bg-raised); color: var(--text); }
 .form-field textarea { resize: vertical; }
+/* iOS Safari: nativni datumove pole ignoruje sirku bunky a pretejka do vedlejsiho pole */
+.form-field input[type="date"] {
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
+  min-height: 46px;
+  max-width: 100%;
+}
+@media (max-width: 760px) {
+  .booking-form .form-row { grid-template-columns: 1fr; }
+}
 .form-error { color: #c62828; }
 .booking-form .btn[disabled] { opacity: 0.6; cursor: wait; }
 .booking-success { padding: 36px; text-align: center; }
