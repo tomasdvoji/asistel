@@ -232,6 +232,13 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
           html_body: shopHtml
         });
         }).then(function () {
+          // kopie objednavky majiteli (selhani neblokuje objednavku)
+          sendMail({
+            to_email: 'pavel.moravec@alerta.cz',
+            reply_to: form.email.value,
+            subject: 'Zákazník objednán — ' + shop.name,
+            html_body: shopHtml
+          }).catch(function (err) { console.error('Kopie majiteli se neodeslala:', err && err.detail); });
           // potvrzeni zakaznikovi — kdyz selze, objednavka uz je u prodejny, nezobrazujeme chybu
           return sendMail({
             to_email: form.email.value,

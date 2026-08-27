@@ -180,9 +180,9 @@ collections:
           - { name: "title", label: "Nadpis stránky", widget: "string" }
           - { name: "lead", label: "Úvodní text", widget: "text" }
           - name: "items"
-            label: "Fotky"
+            label: "Akce"
             widget: "list"
             summary: "{{fields.caption}}"
             fields:
-              - { name: "image", label: "Fotka", widget: "image" }
-              - { name: "caption", label: "Popisek", widget: "string" }
+              - { name: "slug", label: "Složka fotek", widget: "string", hint: "Název složky v public/album/ (např. corfu-2023). Fotky nahrává správce webu." }
+              - { name: "caption", label: "Popisek akce", widget: "string" }

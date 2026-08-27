@@ -1,7 +1,17 @@
 ---
+import fs from 'node:fs';
 import Base from '../layouts/Base.astro';
-import { media } from '../media';
 import album from '../data/editable/album.json';
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
+// Fotky akce se ctou pri buildu z public/album/<slug>/
+const galleryFor = (slug: string): string[] => {
+  const dir = `public/album/${slug}`;
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+    .map((f) => `${base}/album/${slug}/${f}`);
+};
 ---
 <Base title="Fotoalbum — Asistel s.r.o" description="Fotoalbum z našich teambuildingů, firemních výletů a dalších akcí. Podívejte se, jak se bavíme a poznáváme se lépe jako tým.">
   <section class="section page-head">
@@ -14,20 +24,86 @@ import album from '../data/editable/album.json';
   <section class="section" style="padding-top:0">
     <div class="container">
       <div class="album-grid">
-        {album.items.map((p) => (
-          <button class="album-tile" type="button" data-lightbox data-caption={p.caption} aria-label={`Zvětšit fotku: ${p.caption}`} data-reveal>
-            <img src={media(p.image)} alt="" loading="lazy" />
-          </button>
-        ))}
+        {album.items.map((ev) => {
+          const gallery = galleryFor(ev.slug);
+          if (gallery.length === 0) return null;
+          return (
+          <figure class="album-item" data-reveal>
+            <button class="album-tile" type="button" data-gallery={JSON.stringify(gallery)} data-shop-name={ev.caption} aria-label={`Zobrazit fotky: ${ev.caption}`}>
+              <img src={gallery[0]} alt="" loading="lazy" />
+              {gallery.length > 1 && <span class="shop-photo-count">📷 {gallery.length}</span>}
+            </button>
+            <figcaption class="album-cap muted">{ev.caption}</figcaption>
+          </figure>
+          );
+        })}
       </div>
     </div>
   </section>
 
-  <div class="lightbox" id="lightbox" hidden>
-    <div class="lightbox-body" role="dialog" aria-modal="true" aria-label="Náhled fotky">
-      <div class="lightbox-content"></div>
-      <p class="lightbox-cap"></p>
+  <div class="lightbox" id="shop-lightbox" hidden>
+    <div class="lightbox-body" role="dialog" aria-modal="true" aria-label="Fotky z akce">
+      <div class="lightbox-content shop-lb-content"></div>
+      <button class="shop-lb-arrow shop-lb-prev" type="button" aria-label="Předchozí fotka"><span class="chev chev-left"></span></button>
+      <button class="shop-lb-arrow shop-lb-next" type="button" aria-label="Další fotka"><span class="chev chev-right"></span></button>
+      <p class="lightbox-cap"><span class="shop-lb-name"></span> · <span class="shop-lb-counter"></span></p>
       <button class="lightbox-close" type="button" aria-label="Zavřít">✕</button>
     </div>
   </div>
+
+  <script>
+    const lb = document.getElementById('shop-lightbox')!;
+    const content = lb.querySelector('.shop-lb-content')!;
+    const nameEl = lb.querySelector('.shop-lb-name')!;
+    const counterEl = lb.querySelector('.shop-lb-counter')!;
+    const prevBtn = lb.querySelector<HTMLButtonElement>('.shop-lb-prev')!;
+    const nextBtn = lb.querySelector<HTMLButtonElement>('.shop-lb-next')!;
+    const closeBtn = lb.querySelector<HTMLButtonElement>('.lightbox-close')!;
+    let photos: string[] = [];
+    let idx = 0;
+    let lastFocused: HTMLElement | null = null;
+
+    function show() {
+      content.innerHTML = '';
+      const img = document.createElement('img');
+      img.src = photos[idx];
+      img.alt = '';
+      content.appendChild(img);
+      counterEl.textContent = `${idx + 1} / ${photos.length}`;
+      const single = photos.length < 2;
+      prevBtn.hidden = single;
+      nextBtn.hidden = single;
+    }
+    function open(btn: HTMLElement) {
+      photos = JSON.parse(btn.dataset.gallery || '[]');
+      if (!photos.length) return;
+      nameEl.textContent = btn.dataset.shopName || '';
+      idx = 0;
+      lastFocused = btn;
+      lb.hidden = false;
+      show();
+      closeBtn.focus();
+    }
+    function close() {
+      lb.hidden = true;
+      lastFocused?.focus();
+    }
+    function step(d: number) {
+      idx = (idx + d + photos.length) % photos.length;
+      show();
+    }
+    document.querySelectorAll<HTMLElement>('[data-gallery]').forEach((btn) => {
+      btn.addEventListener('click', () => open(btn));
+    });
+    prevBtn.addEventListener('click', () => step(-1));
+    nextBtn.addEventListener('click', () => step(1));
+    closeBtn.addEventListener('click', close);
+    lb.addEventListener('click', (e) => { if (e.target === lb) close(); });
+    document.addEventListener('keydown', (e) => {
+      if (lb.hidden) return;
+      if (e.key === 'Escape') close();
+      if (e.key === 'ArrowLeft') step(-1);
+      if (e.key === 'ArrowRight') step(1);
+    });
+  </script>
 </Base>

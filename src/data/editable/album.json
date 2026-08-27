@@ -3,14 +3,53 @@
   "title": "Rádi se potkáváme i mimo práci.",
   "lead": "Teambuildingy, firemní výlety nebo jen společná večeře – pravidelně vyrážíme ven jako tým. Věříme, že dobrá parta dělá dobrou práci, a proto investujeme do akcí, kde si každý odpočine, zasměje se a lépe pozná své kolegy.",
   "items": [
-    { "image": "https://picsum.photos/seed/asistel-album-1/640/480", "caption": "Teambuilding 2025" },
-    { "image": "https://picsum.photos/seed/asistel-album-2/640/480", "caption": "Firemní výlet" },
-    { "image": "https://picsum.photos/seed/asistel-album-3/640/480", "caption": "Společná večeře" },
-    { "image": "https://picsum.photos/seed/asistel-album-4/640/480", "caption": "Teambuilding 2025" },
-    { "image": "https://picsum.photos/seed/asistel-album-5/640/480", "caption": "Vánoční večírek" },
-    { "image": "https://picsum.photos/seed/asistel-album-6/640/480", "caption": "Letní grilovačka" },
-    { "image": "https://picsum.photos/seed/asistel-album-7/640/480", "caption": "Firemní výlet" },
-    { "image": "https://picsum.photos/seed/asistel-album-8/640/480", "caption": "Teambuilding 2024" },
-    { "image": "https://picsum.photos/seed/asistel-album-9/640/480", "caption": "Bowling" }
+    {
+      "slug": "liptov-2012",
+      "caption": "Cesta do neznáma – Liptov 2012"
+    },
+    {
+      "slug": "tatry-2015",
+      "caption": "Cesta do neznáma – Vysoké Tatry 2015"
+    },
+    {
+      "slug": "bavorsko-2014",
+      "caption": "Cesta do neznáma – Bavorsko 2014"
+    },
+    {
+      "slug": "lago-di-garda-2017",
+      "caption": "Trip vedoucích prodejen – Lago di Garda 2017"
+    },
+    {
+      "slug": "kacov-2022",
+      "caption": "Celofiremní akce – Kácov 2022"
+    },
+    {
+      "slug": "heroltice-2017",
+      "caption": "Celofiremní akce – Heroltice 2017"
+    },
+    {
+      "slug": "lotyssko-2022",
+      "caption": "Cesta do neznáma – Lotyšsko 2022"
+    },
+    {
+      "slug": "krkonose-2022",
+      "caption": "Celofiremní akce – Krkonoše (Mladé Buky) 2022"
+    },
+    {
+      "slug": "corfu-2023",
+      "caption": "Cesta do neznáma – Corfu 2023"
+    },
+    {
+      "slug": "andalucia-2018",
+      "caption": "Trip s regionálními managery – Andalucía 2018"
+    },
+    {
+      "slug": "sicilia-2017",
+      "caption": "Trip s regionálními managery – Sicílie 2017"
+    },
+    {
+      "slug": "toscana-2021",
+      "caption": "Trip s vedoucími a regionálními managery – Toskánsko 2021"
+    }
   ]
 }

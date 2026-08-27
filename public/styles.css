@@ -615,6 +615,10 @@ img.avatar { object-fit: cover; }
 .shop-photo span { color: var(--text-dim); font-weight: 600; font-size: 0.9rem; }
 
 /* ---------- album + lightbox ---------- */
+.album-item { margin: 0; }
+.album-tile { position: relative; }
+.album-item .album-tile { border: 2px solid var(--accent); border-radius: 14px; overflow: hidden; display: block; width: 100%; }
+.album-cap { margin-top: 8px; font-size: 0.9rem; text-align: center; }
 .album-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
