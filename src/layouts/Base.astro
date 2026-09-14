@@ -58,10 +58,30 @@ const { title, description } = Astro.props;
         <li><a href={base + "/tym"}>Tým</a></li>
         <li><a href={base + "/album"}>Fotoalbum</a></li>
         <li><a href={base + "/kariera"}>Kariéra</a></li>
+        <li><a href={base + "/gdpr"}>Ochrana osobních údajů</a></li>
       </ul>
       <p>{site.copyright}</p>
     </div>
   </footer>
+
+  <div class="cookie-bar" id="cookie-bar" hidden>
+    <p>Tento web nepoužívá žádné sledovací cookies — ukládáme jen nezbytné technické informace. <a href={base + "/gdpr"}>Více o ochraně osobních údajů</a></p>
+    <button class="btn btn-primary" type="button" id="cookie-ok">Rozumím</button>
+  </div>
+  <script is:inline>
+    // Informacni lista o cookies/GDPR (zobrazi se jen do potvrzeni)
+    (function () {
+      var ok = false;
+      try { ok = !!localStorage.getItem('cookies-ok'); } catch (e) {}
+      if (ok) return;
+      var bar = document.getElementById('cookie-bar');
+      bar.hidden = false;
+      document.getElementById('cookie-ok').addEventListener('click', function () {
+        try { localStorage.setItem('cookies-ok', '1'); } catch (e) {}
+        bar.hidden = true;
+      });
+    })();
+  </script>
 
   <script src={base + "/script.js"} is:inline></script>
 </body>

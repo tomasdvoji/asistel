@@ -63,6 +63,7 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
         </div>
         <p class="form-error muted" id="bf-error" hidden>{cfg.errorText}</p>
         <p style="margin-top:8px"><button class="btn btn-primary" type="submit" id="bf-submit">Objednat se</button></p>
+        <p class="muted" style="font-size:0.8rem;margin-top:10px">Odesláním formuláře berete na vědomí <a href="/gdpr" style="color:var(--accent-text)">zásady zpracování osobních údajů</a>.</p>
       </form>
 
       <div class="card booking-success" id="booking-success" hidden data-reveal-skip>

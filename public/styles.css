@@ -574,6 +574,27 @@ img.avatar { object-fit: cover; }
   .booking-form .form-row { grid-template-columns: 1fr; }
 }
 .form-error { color: #c62828; }
+.cookie-bar {
+  position: fixed;
+  left: 16px; right: 16px; bottom: 16px;
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 14px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-raised);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+}
+.cookie-bar[hidden] { display: none; }
+.cookie-bar p { margin: 0; font-size: 0.88rem; }
+.cookie-bar a { color: var(--accent-text); }
+.gdpr-text h2 { margin: 26px 0 10px; font-size: 1.15rem; }
+.gdpr-text p { margin-bottom: 10px; max-width: 70ch; }
+.gdpr-text a { color: var(--accent-text); }
 .booking-form .btn[disabled] { opacity: 0.6; cursor: wait; }
 .booking-success { padding: 36px; text-align: center; }
 .booking-success h2 { margin-bottom: 10px; }

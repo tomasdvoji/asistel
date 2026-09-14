@@ -1,0 +1,41 @@
+---
+import Base from '../layouts/Base.astro';
+import site from '../data/editable/site.json';
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
+---
+<Base title={`Ochrana osobních údajů — ${site.name}`} description={`Zásady zpracování osobních údajů a používání cookies na webu společnosti ${site.name}.`}>
+  <section class="section page-head">
+    <div class="container">
+      <span class="eyebrow">GDPR</span>
+      <h1 class="grad-text">Ochrana osobních údajů</h1>
+      <p class="muted">Zásady zpracování osobních údajů a používání cookies</p>
+    </div>
+  </section>
+  <section class="section" style="padding-top:0">
+    <div class="container gdpr-text">
+      <h2>1. Správce osobních údajů</h2>
+      <p>Správcem osobních údajů je společnost <strong>{site.name}</strong>, se sídlem {site.address}, IČO: {site.ico}, DIČ: {site.dic} (dále jen „správce").</p>
+      <p>Kontakt pro záležitosti ochrany osobních údajů: <a href="mailto:pavel.moravec@alerta.cz">pavel.moravec@alerta.cz</a></p>
+
+      <h2>2. Jaké údaje zpracováváme a proč</h2>
+      <p>Osobní údaje zpracováváme pouze v souvislosti s <strong>objednáním návštěvy prodejny</strong> přes formulář na tomto webu. Jde o: jméno a příjmení, telefonní číslo, e-mailovou adresu a obsah vaší zprávy (s čím potřebujete pomoci).</p>
+      <p>Účelem zpracování je vyřízení vaší rezervace — předání objednávky vybrané prodejně a zaslání potvrzení termínu. Právním základem je provedení opatření před uzavřením smlouvy na vaši žádost (čl. 6 odst. 1 písm. b) GDPR).</p>
+      <p>Údaje z objednávky existují pouze v podobě e-mailových zpráv doručených prodejně, vedení společnosti a vám. Uchováváme je po dobu nezbytnou k vyřízení rezervace a případné navazující komunikace, nejdéle 1 rok.</p>
+
+      <h2>3. Zpracovatelé a příjemci</h2>
+      <p>Pro odeslání e-mailů z formuláře využíváme službu <strong>EmailJS</strong> (EmailJS Corp., USA). Web je provozován na platformě <strong>GitHub Pages</strong> (GitHub, Inc., USA) a dostupnost rezervačních termínů zajišťuje služba <strong>Cloudflare Workers</strong> (Cloudflare, Inc., USA) — ta ale ukládá pouze anonymní počty rezervací na termín (prodejna, den, čas), žádné osobní údaje. Písma webu se načítají ze služby <strong>Google Fonts</strong> (Google Ireland Ltd.), která při načtení technicky obdrží vaši IP adresu.</p>
+
+      <h2>4. Cookies a ukládání dat v prohlížeči</h2>
+      <p>Tento web <strong>nepoužívá žádné sledovací, analytické ani marketingové cookies</strong>. Do vašeho prohlížeče ukládáme jedinou technickou informaci: potvrzení, že jste četli lištu s informací o ochraně údajů (aby se vám nezobrazovala opakovaně). Takové nezbytné technické uložení nevyžaduje souhlas.</p>
+
+      <h2>5. Vaše práva</h2>
+      <p>Máte právo na přístup ke svým údajům, jejich opravu či výmaz, omezení zpracování, přenositelnost a právo vznést námitku. Se svou žádostí se obraťte na e-mail uvedený výše. Máte také právo podat stížnost u Úřadu pro ochranu osobních údajů (<a href="https://uoou.gov.cz" target="_blank" rel="noopener">uoou.gov.cz</a>).</p>
+
+      <h2>6. Platnost</h2>
+      <p>Tyto zásady jsou platné od 1. 9. 2026 a mohou být průběžně aktualizovány.</p>
+
+      <p style="margin-top:32px"><a class="btn btn-ghost" href={base + "/"}>Zpět na úvod</a></p>
+    </div>
+  </section>
+</Base>
