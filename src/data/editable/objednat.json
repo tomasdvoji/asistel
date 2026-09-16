@@ -6,6 +6,7 @@
   "emailjsService": "service_u08xq4j",
   "emailjsTemplate": "template_80uvfhz",
   "emailjsPublicKey": "iJZN4K9fHkpU1NU0q",
+  "mailApi": "https://mail.webshowcase-tomas.workers.dev",
   "successHeading": "Máte objednáno!",
   "successText": "Vaši rezervaci jsme přijali a předali prodejně. Jakmile ji potvrdí, přijde vám na e-mail potvrzení termínu.",
   "errorText": "Objednávku se nepodařilo odeslat. Zkuste to prosím znovu, nebo se nám ozvěte telefonicky přímo na prodejnu.",

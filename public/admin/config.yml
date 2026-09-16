@@ -147,6 +147,7 @@ collections:
           - { name: "emailjsService", label: "EmailJS — Service ID", widget: "string", hint: "Technické pole, neměnit." }
           - { name: "emailjsTemplate", label: "EmailJS — Template ID", widget: "string", hint: "Technické pole, neměnit." }
           - { name: "emailjsPublicKey", label: "EmailJS — Public Key", widget: "string", hint: "Technické pole, neměnit." }
+          - { name: "mailApi", label: "Resend — adresa mail workeru", widget: "string", required: false, hint: "Nechte prázdné = e-maily jdou přes EmailJS. Vyplňte adresu workeru (např. https://mail.webshowcase-tomas.workers.dev) = e-maily jdou přes Resend." }
 
   # ---------- Tým ----------
   - name: "tym"

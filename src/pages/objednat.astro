@@ -78,7 +78,7 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
     </div>
   </section>
 
-  <script type="application/json" id="booking-data" set:html={JSON.stringify({ shopsB64: shopMetaB64, autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro, ejs: { service: cfg.emailjsService, template: cfg.emailjsTemplate, key: cfg.emailjsPublicKey } })} />
+  <script type="application/json" id="booking-data" set:html={JSON.stringify({ shopsB64: shopMetaB64, autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro, mailApi: cfg.mailApi || '', ejs: { service: cfg.emailjsService, template: cfg.emailjsTemplate, key: cfg.emailjsPublicKey } })} />
   <script is:inline>
     (function () {
       var form = document.getElementById('booking-form');
@@ -215,11 +215,15 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
           custTable +
           '<p style="color:#444;font-size:14px;line-height:1.6;margin:0">' + esc(data.autoOutro).replace(/\n/g, '<br>') + '</p>');
 
+        // mailApi vyplnene v editoru = Resend pres nas worker (mail-worker/), jinak EmailJS
         function sendMail(params) {
-          return fetch('https://api.emailjs.com/api/v1.0/email/send', {
+          var req = data.mailApi
+            ? { url: data.mailApi.replace(/\/$/, '') + '/send', body: { site: SITE, to: params.to_email, reply_to: params.reply_to, subject: params.subject, html: params.html_body } }
+            : { url: 'https://api.emailjs.com/api/v1.0/email/send', body: { service_id: data.ejs.service, template_id: data.ejs.template, user_id: data.ejs.key, template_params: params } };
+          return fetch(req.url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ service_id: data.ejs.service, template_id: data.ejs.template, user_id: data.ejs.key, template_params: params })
+            body: JSON.stringify(req.body)
           }).then(function (r) {
             if (!r.ok) return r.text().then(function (t) { var e = new Error('send failed'); e.detail = t || ('HTTP ' + r.status); throw e; });
           });

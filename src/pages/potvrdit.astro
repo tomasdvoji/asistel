@@ -22,7 +22,7 @@ import cfg from '../data/editable/objednat.json';
     </div>
   </section>
 
-  <script type="application/json" id="pv-data" set:html={JSON.stringify({ autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro, ejs: { service: cfg.emailjsService, template: cfg.emailjsTemplate, key: cfg.emailjsPublicKey } })} />
+  <script type="application/json" id="pv-data" set:html={JSON.stringify({ autoIntro: cfg.autoReplyIntro, autoOutro: cfg.autoReplyOutro, mailApi: cfg.mailApi || '', ejs: { service: cfg.emailjsService, template: cfg.emailjsTemplate, key: cfg.emailjsPublicKey } })} />
   <script is:inline>
     (function () {
       var data = JSON.parse(document.getElementById('pv-data').textContent);
@@ -75,13 +75,15 @@ import cfg from '../data/editable/objednat.json';
           '<p style="color:#444;font-size:14px;line-height:1.6;margin:0">' + esc(data.autoOutro).replace(/\n/g, '<br>') + '</p></div>' +
           '<div style="padding:14px 24px;background:#fafafa;color:#999;font-size:12px">Asistel s.r.o &middot; partnersk&eacute; prodejny T&#8209;Mobile</div></div>';
 
-        fetch('https://api.emailjs.com/api/v1.0/email/send', {
+        var subject = 'Potvrzení Vaší návštěvy prodejny T-Mobile';
+        // mailApi vyplnene v editoru = Resend pres nas worker (mail-worker/), jinak EmailJS
+        var req = data.mailApi
+          ? { url: data.mailApi.replace(/\/$/, '') + '/send', body: { site: 'asistel', to: o.c, reply_to: o.s.email, subject: subject, html: html } }
+          : { url: 'https://api.emailjs.com/api/v1.0/email/send', body: { service_id: data.ejs.service, template_id: data.ejs.template, user_id: data.ejs.key, template_params: { to_email: o.c, reply_to: o.s.email, subject: subject, html_body: html } } };
+        fetch(req.url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            service_id: data.ejs.service, template_id: data.ejs.template, user_id: data.ejs.key,
-            template_params: { to_email: o.c, reply_to: o.s.email, subject: 'Potvrzení Vaší návštěvy prodejny T-Mobile', html_body: html }
-          })
+          body: JSON.stringify(req.body)
         }).then(function (r) {
           if (!r.ok) throw new Error('HTTP ' + r.status);
           sendBtn.style.display = 'none';
