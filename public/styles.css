@@ -574,6 +574,17 @@ img.avatar { object-fit: cover; }
   .booking-form .form-row { grid-template-columns: 1fr; }
 }
 .form-error { color: #c62828; }
+.softlab-credit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 20px 12px calc(22px + env(safe-area-inset-bottom));
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.softlab-credit img { width: 96px; height: auto; display: block; }
+.softlab-credit a { line-height: 0; }
 .cookie-bar {
   position: fixed;
   left: 16px; right: 16px; bottom: 16px;
