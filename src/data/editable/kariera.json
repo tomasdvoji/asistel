@@ -1,49 +1,58 @@
 {
   "eyebrow": "Kariéra",
-  "title": "Hledáme posilu do týmu T-Mobile",
-  "intro": "Jsme Asistel s.r.o., nejúspěšnější partner T-Mobile Czech Republic. Naším cílem je poskytovat špičkový servis zákazníkům a budovat skvělý tým, kde si všichni pomáháme, motivujeme se a slavíme úspěchy.",
-  "contactHeading": "Pokud máte zájem u nás pracovat, kontaktujte našeho regionálního manažera Milana Pecku, nebo se podívejte na inzeráty níže.",
-  "contactEmailLabel": "Milan Pecka — e-mail:",
-  "email": "jhradec@asistel.cz",
+  "title": "Hledáme posily do týmu T-Mobile",
+  "intro": "Jsme Asistel s.r.o., nejúspěšnější partner T-Mobile Czech Republic. Naším cílem je poskytovat špičkový servis zákazníkům a zároveň budovat tým, kde si lidé pomáhají, podporují se a společně slaví úspěchy. Hledáš práci, kde se pořád něco děje? Baví tě komunikace s lidmi, obchod a chceš vidět výsledky své práce i na výplatě? Pak možná hledáme právě tebe. U nás najdeš různé možnosti – od prodejního konzultanta až po vedoucího prodejny.",
+  "contactHeading": "Chcete u nás pracovat? Kontaktujte naši personalistku Sabinu Ponikelskou, nebo se podívejte na nabídky níže.",
+  "contactEmailLabel": "Sabina Ponikelská — e-mail:",
+  "email": "sabina.ponikelska@asistel.cz",
   "contactPhoneLabel": "Telefon:",
-  "phone": "734 206 169",
+  "phone": "604 759 579",
   "sections": [
     {
-      "heading": "Co Vás u nás čeká a co bude Vaše pracovní náplň?",
+      "heading": "Co tě u nás čeká?",
       "items": [
-        "✔ Měsíční školení – naučíš se vše o službách, prodeji i našich systémech.",
-        "✔ Každodenní kontakt se zákazníky – zjistíš jejich potřeby a připravíš jim nabídku na míru.",
-        "✔ Prodej služeb, zařízení a příslušenství.",
-        "✔ Podíl na chodu prodejny, řešení reklamací, lehká administrativa.",
-        "✔ Skvělý tým a podpora – manažer i kolegové ti vždy pomohou."
+        "✔ Každodenní kontakt se zákazníky – zjistíš, co potřebují, a společně najdete nejlepší řešení.",
+        "✔ Prodej telefonů, tarifů, internetu, příslušenství a dalších služeb.",
+        "✔ Aktivní obchod a práce s výsledky.",
+        "✔ Podíl na chodu prodejny, řešení reklamací a běžná administrativa.",
+        "✔ Pořádné zaškolení – na začátku tě nenecháme plavat. Naučíš se naše služby, systémy i to, jak dělat dobrý obchod.",
+        "✔ Podpora manažera a kolegů, kteří tě v tom nenechají samotného."
       ]
     },
     {
       "heading": "Koho hledáme?",
       "items": [
-        "🔹 Energického člověka s tahem na branku a obchodním duchem.",
-        "🔹 Týmového hráče, který se nebojí komunikovat a má chuť prodávat.",
-        "🔹 Férového a cílevědomého profíka s individuálním přístupem k zákazníkům."
+        "Nemusíš mít roky zkušeností v obchodě. Důležitější je pro nás, jaký jsi člověk a jak k práci přistupuješ. Hledáme lidi, kteří:",
+        "✔ Nebojí se komunikovat.",
+        "✔ Mají energii a chuť pracovat.",
+        "✔ Umí naslouchat a hledat řešení.",
+        "✔ Baví je obchod a chtějí se zlepšovat.",
+        "✔ Jsou spolehliví a umí fungovat v týmu."
       ]
     },
     {
-      "heading": "💰 Na co se můžeš těšit?",
+      "heading": "Kolik si u nás vyděláš?",
       "items": [
-        "Tvoje mzda se skládá z fixní části a provizí podle výkonu – a právě v tom je síla! 🔥",
-        "💸 Naši kolegové si průměrně vydělají od 35 000 do 55 000 Kč hrubého měsíčně.",
-        "🏆 Ti nejlepší si ale bez problému sáhnou i na vyšší částky – záleží jen na tobě a tvém nasazení!"
+        "Tvoje mzda se skládá z fixní části a motivačních odměn podle výsledků.",
+        "💰 30 000–55 000 Kč měsíčně. Ti nejlepší si vydělají i více.",
+        "Kolik si odneseš domů, tedy není jen o pevně daném stropu. Výsledky se u nás počítají."
       ]
     },
     {
-      "heading": "Naše benefity:",
+      "heading": "A co za to ještě dostaneš?",
       "items": [
-        "🎁 25 dní dovolené",
-        "🎁 Benefity – slevy 75 % na služby T-Mobile pro sebe a své blízké",
-        "🎁 Příspěvek na nový telefon až 23 100 Kč",
-        "🎁 Stravenky v hodnotě 225 Kč / odpracovaný den",
-        "🎁 Slevy u našich partnerů – např. Datart, Optik do domu, Koupelny Ptáček atd.",
-        "🤝 Tým skvělých lidí a férový přístup.",
-        "📈 Podporu, rozvoj a kariérní růst."
+        "✔ 75% sleva na služby T-Mobile pro tebe i tvoje blízké",
+        "✔ příspěvek až 23 100 Kč na nový telefon",
+        "✔ stravenky 225 Kč za každý odpracovaný den",
+        "✔ slevy u našich partnerů – Datart, Optik do domu, Koupelny Ptáček a další",
+        "✔ zaškolení, podpora a možnost kariérního růstu",
+        "✔ soutěže pro nejlepší prodejce o zahraniční zájezdy"
+      ]
+    },
+    {
+      "heading": "Tak co, podáme si ruce?",
+      "items": [
+        "Podívej se na naše aktuální nabídky a třeba právě mezi nimi najdeš svoji další práci."
       ]
     }
   ],
