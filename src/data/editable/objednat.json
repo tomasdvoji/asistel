@@ -1,15 +1,15 @@
 {
-  "eyebrow": "Objednání",
-  "title": "Objednejte se na prodejnu",
-  "lead": "Vyberte si prodejnu, den a čas — my se na vás připravíme. Potvrzení vám přijde na e-mail.",
+  "eyebrow": "Rezervace",
+  "title": "Rezervujte si návštěvu prodejny",
+  "lead": "Stačí zvolit prodejnu, den a čas — budeme na vás připraveni. Potvrzení termínu vám pošleme e-mailem.",
   "fallbackEmail": "softlab.cz@gmail.com",
   "emailjsService": "service_u08xq4j",
   "emailjsTemplate": "template_80uvfhz",
   "emailjsPublicKey": "iJZN4K9fHkpU1NU0q",
   "mailApi": "https://mail.webshowcase-tomas.workers.dev",
-  "successHeading": "Máte objednáno!",
-  "successText": "Vaši rezervaci jsme přijali a předali prodejně. Jakmile ji potvrdí, přijde vám na e-mail potvrzení termínu.",
-  "errorText": "Objednávku se nepodařilo odeslat. Zkuste to prosím znovu, nebo se nám ozvěte telefonicky přímo na prodejnu.",
-  "autoReplyIntro": "Dobrý den,\nděkujeme za Vaši rezervaci. Termín jsme úspěšně zaznamenali a budeme se na Vás těšit na naší prodejně 😊",
-  "autoReplyOutro": "V případě změny nebo dotazu nás neváhejte kontaktovat.\n\nS pozdravem\nTým partnerských prodejen T-Mobile"
+  "successHeading": "Rezervace přijata!",
+  "successText": "Vaši objednávku jsme předali vybrané prodejně. Jakmile termín potvrdí, dorazí vám potvrzení na e-mail.",
+  "errorText": "Odeslání rezervace se nezdařilo. Zkuste to prosím ještě jednou, případně zavolejte rovnou na prodejnu.",
+  "autoReplyIntro": "Dobrý den,\nděkujeme za Vaši rezervaci. Termín máme zaznamenaný a na naší prodejně se na Vás budeme těšit 😊",
+  "autoReplyOutro": "Pokud budete potřebovat termín změnit nebo máte dotaz, ozvěte se nám.\n\nS pozdravem\nTým partnerských prodejen T-Mobile"
 }

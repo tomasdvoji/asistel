@@ -96,6 +96,48 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
       var API = 'https://rezervace.webshowcase-tomas.workers.dev';
       var SITE = 'asistel';
       function slotKey() { return SITE + ':' + form.prodejna.value + ':' + form.datum.value; }
+
+      // Casy podle skutecne oteviraci doby prodejny a dne v tydnu (z shops.json "hours")
+      function dayRanges(hoursStr, dow) {
+        var pick = null;
+        hoursStr.split('·').forEach(function (seg) {
+          var m = seg.trim().match(/^(Po[–-]Pá|Po[–-]So|Po[–-]Ne|So|Ne)\s*(.*)$/);
+          if (!m) return;
+          var d = m[1].replace('-', '–');
+          var hit = d === 'Po–Ne' || (d === 'Po–Pá' && dow >= 1 && dow <= 5) || (d === 'Po–So' && dow >= 1 && dow <= 6) || (d === 'So' && dow === 6) || (d === 'Ne' && dow === 0);
+          if (hit) pick = m[2];
+        });
+        if (!pick || /zav/i.test(pick)) return [];
+        var out = [];
+        pick.split(',').forEach(function (r) {
+          var mm = r.match(/(\d{1,2}):(\d{2})\s*[–-]\s*(\d{1,2}):(\d{2})/);
+          if (mm) out.push([+mm[1] * 60 + +mm[2], +mm[3] * 60 + +mm[4]]);
+        });
+        return out;
+      }
+      function buildTimes() {
+        var shop = shops.filter(function (s) { return s.id === form.prodejna.value; })[0];
+        var dow = form.datum.value ? new Date(form.datum.value + 'T12:00:00').getDay() : 1;
+        var ranges = shop && shop.hours ? dayRanges(shop.hours, dow) : [[540, 1080]];
+        var prev = form.cas.value;
+        form.cas.innerHTML = '';
+        ranges.forEach(function (rg) {
+          for (var t = Math.ceil(rg[0] / 30) * 30; t <= rg[1] - 30; t += 30) {
+            var label = Math.floor(t / 60) + ':' + ('0' + (t % 60)).slice(-2);
+            var o = document.createElement('option');
+            o.value = label; o.textContent = label;
+            form.cas.appendChild(o);
+          }
+        });
+        if (!form.cas.options.length) {
+          var c = document.createElement('option');
+          c.value = ''; c.textContent = 'V tento den je zavřeno'; c.disabled = true; c.selected = true;
+          form.cas.appendChild(c);
+        } else if (prev) {
+          form.cas.value = prev;
+          if (!form.cas.value) form.cas.selectedIndex = 0;
+        }
+      }
       function refreshSlots() {
         if (!form.datum.value) return;
         fetch(API + '/slots?key=' + encodeURIComponent(slotKey()))
@@ -122,8 +164,9 @@ const shopMetaB64 = Buffer.from(JSON.stringify(shopMeta), 'utf8').toString('base
           if (r.status === 409) { var e = new Error('slot_full'); e.slotFull = true; throw e; }
         }).catch(function (e) { if (e.slotFull) throw e; }); // vypadek sluzby rezervaci neblokuje
       }
-      form.prodejna.addEventListener('change', refreshSlots);
-      form.datum.addEventListener('change', refreshSlots);
+      form.prodejna.addEventListener('change', function () { buildTimes(); refreshSlots(); });
+      form.datum.addEventListener('change', function () { buildTimes(); refreshSlots(); });
+      buildTimes();
 
       form.addEventListener('submit', function (e) {
         e.preventDefault();
