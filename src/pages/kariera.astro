@@ -1,6 +1,9 @@
 ---
 import Base from '../layouts/Base.astro';
 import k from '../data/editable/kariera.json';
+import pozice from '../data/editable/pozice.json';
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
 ---
 <Base title={`${k.title} — Asistel s.r.o`} description={k.intro}>
   <section class="section page-head">
@@ -13,6 +16,21 @@ import k from '../data/editable/kariera.json';
 
   <section class="section" style="padding-top:0">
     <div class="container job">
+      {pozice.items.length > 0 && (
+      <div class="job-section" data-reveal>
+        <h2>Aktuálně volné pozice</h2>
+        <div class="pozice-grid">
+          {pozice.items.map((p) => (
+            <a class="card pozice-card" href={`${base}/kariera/${p.id}`}>
+              <h3>{p.title}</h3>
+              <p class="muted">{p.misto} · {p.typ}</p>
+              <span class="btn btn-ghost">Detail a přihláška</span>
+            </a>
+          ))}
+        </div>
+      </div>
+      )}
+
       <div class="card job-contact" data-reveal>
         <h2 class="grad-text">{k.contactHeading}</h2>
         {k.email && <p>{k.contactEmailLabel} <a href={`mailto:${k.email}`}>{k.email}</a></p>}

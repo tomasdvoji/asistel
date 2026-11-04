@@ -149,6 +149,25 @@ collections:
           - { name: "emailjsPublicKey", label: "EmailJS — Public Key", widget: "string", hint: "Technické pole, neměnit." }
           - { name: "mailApi", label: "Resend — adresa mail workeru", widget: "string", required: false, hint: "Nechte prázdné = e-maily jdou přes EmailJS. Vyplňte adresu workeru (např. https://mail.webshowcase-tomas.workers.dev) = e-maily jdou přes Resend." }
 
+  # ---------- Volné pozice ----------
+  - name: "pozice"
+    label: "Volné pozice (kariéra)"
+    files:
+      - name: "seznam"
+        label: "Seznam volných pozic"
+        file: "src/data/editable/pozice.json"
+        fields:
+          - name: "items"
+            label: "Pozice"
+            widget: "list"
+            summary: "{{fields.title}} — {{fields.misto}}"
+            fields:
+              - { name: "id", label: "Adresa (slug)", widget: "string", hint: "Bez diakritiky a mezer, např. prodejni-konzultant-trutnov. Určuje adresu stránky." }
+              - { name: "title", label: "Název pozice", widget: "string", default: "Prodejní konzultant/ka" }
+              - { name: "misto", label: "Město / prodejna", widget: "string" }
+              - { name: "typ", label: "Úvazek", widget: "string", default: "Plný úvazek" }
+              - { name: "text", label: "Text inzerátu", widget: "text", required: false, hint: "Když necháte prázdné, použije se přednastavený text s benefity. Pro seniorní pozice přepište." }
+
   # ---------- Tým ----------
   - name: "tym"
     label: "Tým"

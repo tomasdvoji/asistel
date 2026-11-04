@@ -6,7 +6,8 @@ const LIMIT = 2;
 const TTL = 60 * 60 * 24 * 60; // 60 dni
 
 const SITES = ['alerta', 'asistel'];
-const DASH_KEY = 'prehled-7g2k9xqv4m'; // klic do prehledu statistik (neni tajemstvi, jen zavora)
+const DASH_KEY = 'prehled-7g2k9xqv4m'; // master klic (zpetna kompatibilita)
+const ACCOUNTS = { alerta: { pass: 'alerta1', key: 'k-alerta-x7q2w' }, asistel: { pass: 'asistel1', key: 'k-asistel-m9v4p' } };
 const STATS_TTL = 60 * 60 * 24 * 400;
 
 async function bump(env, site, kind, name) {
@@ -64,10 +65,19 @@ export default {
       return new Response('ok', { headers: cors });
     }
 
+    if (req.method === 'POST' && url.pathname === '/login') {
+      let b;
+      try { b = await req.json(); } catch { return new Response('bad request', { status: 400, headers: cors }); }
+      const acc = ACCOUNTS[(b && b.user || '').toLowerCase().trim()];
+      if (!acc || acc.pass !== (b && b.pass)) return new Response('forbidden', { status: 403, headers: cors });
+      return Response.json({ site: (b.user || '').toLowerCase().trim(), key: acc.key }, { headers: cors });
+    }
+
     if (req.method === 'GET' && url.pathname === '/stats') {
-      if (url.searchParams.get('key') !== DASH_KEY) return new Response('forbidden', { status: 403, headers: cors });
       const site = url.searchParams.get('site');
       if (!SITES.includes(site)) return new Response('bad request', { status: 400, headers: cors });
+      const k = url.searchParams.get('key');
+      if (k !== DASH_KEY && k !== ACCOUNTS[site].key) return new Response('forbidden', { status: 403, headers: cors });
       const days = Math.min(90, Number(url.searchParams.get('days')) || 30);
       const out = [];
       for (let i = 0; i < days; i++) {
@@ -78,7 +88,6 @@ export default {
     }
 
     if (req.method === 'GET' && url.pathname === '/dash') {
-      if (url.searchParams.get('key') !== DASH_KEY) return new Response('forbidden', { status: 403 });
       return new Response(DASH_HTML, { headers: { 'Content-Type': 'text/html;charset=utf-8' } });
     }
 
@@ -88,7 +97,7 @@ export default {
 
 const DASH_HTML = `<!doctype html><html lang="cs"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Statistiky — Alerta & Asistel</title>
+<title>Statistiky</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -119,11 +128,29 @@ tr:last-child td{border-bottom:0}
 .bar{height:7px;border-radius:4px;background:var(--mag);min-width:3px;opacity:.85}
 .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;margin-right:6px;animation:p 2s infinite}
 @keyframes p{50%{opacity:.3}}
+#login{max-width:360px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px}
+#login h1{margin-bottom:18px}
+#login label{display:block;font-size:.85rem;color:var(--dim);margin:12px 0 5px}
+#login input{width:100%;padding:11px 14px;border-radius:10px;border:1px solid var(--line);background:#141414;color:#fff;font:inherit}
+#login button{width:100%;margin-top:18px;padding:12px;border:0;border-radius:999px;background:var(--mag);color:#fff;font:inherit;font-weight:700;cursor:pointer}
+#lerr{color:#ff5c8a;font-size:.85rem;margin-top:10px;display:none}
+#logout{margin-left:auto;background:none;border:1px solid var(--line);color:var(--dim);border-radius:999px;padding:6px 14px;font:inherit;cursor:pointer}
+[hidden]{display:none!important}
 </style></head><body>
+
+<div id="login" hidden>
+  <h1>Statistiky<span style="color:var(--mag)">.</span></h1>
+  <label>Uživatel</label><input id="lu" autocomplete="username">
+  <label>Heslo</label><input id="lp" type="password" autocomplete="current-password">
+  <button id="lbtn">Přihlásit se</button>
+  <p id="lerr">Špatné jméno nebo heslo.</p>
+</div>
+
+<div id="app" hidden>
 <header>
-  <h1>Statistiky<span>.</span></h1>
-  <div class="seg" id="site"><button data-v="alerta" class="on">Alerta</button><button data-v="asistel">Asistel</button></div>
+  <h1 id="title">Statistiky<span>.</span></h1>
   <div class="seg" id="days"><button data-v="7">7 dní</button><button data-v="30" class="on">30 dní</button><button data-v="90">90 dní</button></div>
+  <button id="logout">Odhlásit</button>
 </header>
 <p class="muted"><span class="pulse"></span>Živě — obnovuje se každých 30 s · anonymní počty bez cookies · <span id="upd"></span></p>
 <div class="tiles" id="tiles"></div>
@@ -132,40 +159,54 @@ tr:last-child td{border-bottom:0}
   <div class="card"><h2>Akce návštěvníků</h2><table id="events"></table></div>
   <div class="card"><h2>Nejnavštěvovanější stránky</h2><table id="pages"></table></div>
 </div>
+</div>
+
 <script>
-const KEY=new URLSearchParams(location.search).get('key');
-const NAMES={rezervace:'Odeslané objednávky','objednat-klik':'Klik na „Objednat se"',tel:'Klik na telefon',mailto:'Klik na e-mail'};
+const NAMES={rezervace:'Odeslané objednávky','objednat-klik':'Klik na „Objednat se“',tel:'Klik na telefon',mailto:'Klik na e-mail','kariera-klik':'Klik na Kariéru','pozice-klik':'Klik na volnou pozici',prihlaska:'Odeslané přihlášky (nábor)'};
 const PAGES={'/':'Úvod','/prodejny/':'Prodejny','/tym/':'Tým','/album/':'Fotoalbum','/kariera/':'Kariéra','/objednat/':'Objednání','/gdpr/':'GDPR'};
-let site='alerta',days=30;
-function seg(id,cb){document.getElementById(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
-  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v);load();});}
-seg('site',v=>site=v);seg('days',v=>days=+v);
+let auth=null,days=30,timer=null;
+try{auth=JSON.parse(localStorage.getItem('dash-auth'))}catch(e){}
+const $=id=>document.getElementById(id);
+function show(){
+  $('login').hidden=!!auth;$('app').hidden=!auth;
+  if(auth){$('title').innerHTML='Statistiky '+auth.site.charAt(0).toUpperCase()+auth.site.slice(1)+'<span>.</span>';load();clearInterval(timer);timer=setInterval(load,30000);}
+}
+$('lbtn').onclick=async()=>{
+  const r=await fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:$('lu').value,pass:$('lp').value})});
+  if(!r.ok){$('lerr').style.display='block';return}
+  auth=await r.json();try{localStorage.setItem('dash-auth',JSON.stringify(auth))}catch(e){}
+  show();
+};
+$('lp').addEventListener('keydown',e=>{if(e.key==='Enter')$('lbtn').click()});
+$('logout').onclick=()=>{auth=null;try{localStorage.removeItem('dash-auth')}catch(e){};clearInterval(timer);show()};
+$('days').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));days=+b.dataset.v;load();});
 const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
 async function load(){
-  const r=await fetch('/stats?site='+site+'&days='+days+'&key='+encodeURIComponent(KEY));
-  if(!r.ok){document.body.innerHTML='<p style="padding:40px">Přístup odepřen.</p>';return}
-  const data=(await r.json()).reverse(); // nejstarsi -> dnesek
+  if(!auth)return;
+  const r=await fetch('/stats?site='+auth.site+'&days='+days+'&key='+encodeURIComponent(auth.key));
+  if(!r.ok){$('logout').click();return}
+  const data=(await r.json()).reverse();
   const views=data.reduce((a,d)=>a+sum(d.v),0), today=data[data.length-1]?sum(data[data.length-1].v):0;
   const ev={},pg={};
   data.forEach(d=>{for(const[k,n]of Object.entries(d.e))ev[k]=(ev[k]||0)+n;for(const[k,n]of Object.entries(d.v))pg[k]=(pg[k]||0)+n;});
-  document.getElementById('tiles').innerHTML=
+  $('tiles').innerHTML=
     '<div class="tile hl"><b>'+today+'</b><small>zobrazení dnes</small></div>'+
     '<div class="tile"><b>'+views+'</b><small>zobrazení za '+days+' dní</small></div>'+
     '<div class="tile"><b>'+(ev.rezervace||0)+'</b><small>odeslaných objednávek</small></div>'+
     '<div class="tile"><b>'+((ev['objednat-klik']||0)+(ev.tel||0)+(ev.mailto||0))+'</b><small>kliků na kontakty</small></div>';
-  // graf
-  const svg=document.getElementById('chart');const W=1000,H=170,n=data.length,max=Math.max(1,...data.map(d=>sum(d.v)));
+  const svg=$('chart'),W=1000,H=170,n=data.length,max=Math.max(1,...data.map(d=>sum(d.v)));
   const bw=W/n;
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
   svg.innerHTML=data.map((d,i)=>{const h=Math.round(sum(d.v)/max*(H-24));
     return '<rect x="'+(i*bw+1).toFixed(1)+'" y="'+(H-h)+'" width="'+Math.max(1,bw-2).toFixed(1)+'" height="'+h+'" rx="2" fill="#E20074" opacity="'+(i===n-1?'1':'0.55')+'"><title>'+d.date+': '+sum(d.v)+'</title></rect>';}).join('');
-  document.getElementById('chartlab').innerHTML='<span>'+data[0].date.slice(5)+'</span><span>max '+max+' / den</span><span>'+data[n-1].date.slice(5)+'</span>';
-  // tabulky s pruhy
+  $('chartlab').innerHTML='<span>'+data[0].date.slice(5)+'</span><span>max '+max+' / den</span><span>'+data[n-1].date.slice(5)+'</span>';
   const rows=(obj,names)=>{const es=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,12);const m=Math.max(1,...es.map(e=>e[1]));
     return es.map(([k,v])=>'<tr><td>'+((names&&names[k])||k)+'</td><td style="width:34%"><div class="bar" style="width:'+Math.round(v/m*100)+'%"></div></td><td class="n">'+v+'</td></tr>').join('');};
-  document.getElementById('events').innerHTML=rows(ev,NAMES)||'<tr><td class="muted">zatím žádné akce</td></tr>';
-  document.getElementById('pages').innerHTML=rows(pg,PAGES)||'<tr><td class="muted">zatím žádná data</td></tr>';
-  document.getElementById('upd').textContent='aktualizováno '+new Date().toLocaleTimeString('cs');
+  $('events').innerHTML=rows(ev,NAMES)||'<tr><td class="muted">zatím žádné akce</td></tr>';
+  $('pages').innerHTML=rows(pg,PAGES)||'<tr><td class="muted">zatím žádná data</td></tr>';
+  $('upd').textContent='aktualizováno '+new Date().toLocaleTimeString('cs');
 }
-load();setInterval(load,30000);
-</script></body></html>`;
+show();
+</script></body></html>
+`;

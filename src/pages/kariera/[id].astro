@@ -1,0 +1,101 @@
+---
+import Base from '../../layouts/Base.astro';
+import site from '../../data/editable/site.json';
+import k from '../../data/editable/kariera.json';
+const baseRaw = import.meta.env.BASE_URL;
+const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
+
+export async function getStaticPaths() {
+  const { default: data } = await import('../../data/editable/pozice.json');
+  return data.items.map((p) => ({ params: { id: p.id }, props: { p } }));
+}
+const { p } = Astro.props;
+const text = p.text || `Do naší prodejny T-Mobile v místě ${p.misto} hledáme novou posilu. Nemusíš mít roky zkušeností v obchodě — důležitější je pro nás, jaký jsi člověk a jak k práci přistupuješ. Čeká tě každodenní kontakt se zákazníky, prodej telefonů, tarifů a služeb, pořádné zaškolení a podpora týmu, který tě v ničem nenechá samotného. Mzda 30 000–55 000 Kč podle výsledků, 75% sleva na služby T-Mobile, příspěvek na telefon, stravenky a další benefity.`;
+---
+<Base title={`${p.title} — ${p.misto} | ${site.name}`} description={`Volná pozice ${p.title} na prodejně T-Mobile ${p.misto}.`}>
+  <section class="section page-head">
+    <div class="container">
+      <span class="eyebrow">Volná pozice</span>
+      <h1 class="grad-text">{p.title} — {p.misto}</h1>
+      <p class="muted">{p.typ} · prodejna T-Mobile {p.misto}</p>
+    </div>
+  </section>
+  <section class="section" style="padding-top:0">
+    <div class="container booking">
+      <div class="card booking-form">
+        <p style="margin-bottom:22px">{text}</p>
+
+        <form id="apply-form" novalidate>
+          <div class="form-row">
+            <div class="form-field">
+              <label for="af-name">Jméno a příjmení *</label>
+              <input id="af-name" name="jmeno" type="text" autocomplete="name" required>
+            </div>
+            <div class="form-field">
+              <label for="af-phone">Telefon *</label>
+              <input id="af-phone" name="telefon" type="tel" autocomplete="tel" required>
+            </div>
+            <div class="form-field">
+              <label for="af-email">E-mail *</label>
+              <input id="af-email" name="email" type="email" autocomplete="email" required>
+            </div>
+          </div>
+          <div class="form-field">
+            <label for="af-msg">Pár slov o vás (nepovinné)</label>
+            <textarea id="af-msg" name="zprava" rows="4" placeholder="Např. dosavadní zkušenosti, odkdy můžete nastoupit…"></textarea>
+          </div>
+          <p class="form-error muted" id="af-error" hidden>Přihlášku se nepodařilo odeslat. Zkuste to prosím znovu, nebo napište přímo na {k.email}.</p>
+          <p style="margin-top:8px"><button class="btn btn-primary" type="submit" id="af-submit">Odeslat přihlášku</button></p>
+          <p class="muted" style="font-size:0.8rem;margin-top:10px">Odesláním berete na vědomí <a href="/gdpr" style="color:var(--accent-text)">zásady zpracování osobních údajů</a>.</p>
+        </form>
+
+        <div id="apply-ok" hidden>
+          <h2 class="grad-text">Přihláška odeslána 🎉</h2>
+          <p class="muted" style="margin-top:8px">Díky za zájem! Ozveme se vám co nejdřív na uvedený e-mail nebo telefon.</p>
+          <p style="margin-top:16px"><a class="btn btn-ghost" href={base + "/kariera"}>Zpět na kariéru</a></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script type="application/json" id="apply-data" set:html={JSON.stringify({ hr: k.email, pozice: `${p.title} — ${p.misto}` })} />
+  <script is:inline>
+    (function () {
+      var form = document.getElementById('apply-form');
+      if (!form) return;
+      var cfg = JSON.parse(document.getElementById('apply-data').textContent);
+      var SITE = location.hostname.indexOf('asistel') > -1 ? 'asistel' : 'alerta';
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+      }
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+        if (!form.reportValidity()) return;
+        var btn = document.getElementById('af-submit');
+        var errEl = document.getElementById('af-error');
+        btn.disabled = true; btn.textContent = 'Odesílám…'; errEl.hidden = true;
+        var row = function (l, v) { return '<tr><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#888;font-size:13px;white-space:nowrap">' + l + '</td><td style="padding:8px 12px;border-bottom:1px solid #eee;color:#262626;font-size:14px">' + v + '</td></tr>'; };
+        var html = '<div style="font-family:Arial,sans-serif;max-width:560px"><h2 style="color:#E20074">Nová přihláška — ' + esc(cfg.pozice) + '</h2>' +
+          '<table cellpadding="0" cellspacing="0" style="width:100%;border:1px solid #eee;border-radius:8px;border-collapse:separate">' +
+          row('Pozice', esc(cfg.pozice)) + row('Jméno', esc(form.jmeno.value)) + row('Telefon', esc(form.telefon.value)) +
+          row('E-mail', esc(form.email.value)) + row('Zpráva', esc(form.zprava.value || '—')) + '</table></div>';
+        fetch('https://mail.webshowcase-tomas.workers.dev/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ site: SITE, to: cfg.hr, reply_to: form.email.value, subject: 'Přihláška: ' + cfg.pozice, html: html })
+        }).then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
+          try { navigator.sendBeacon('https://rezervace.webshowcase-tomas.workers.dev/event', new Blob([JSON.stringify({ site: SITE, name: 'prihlaska' })], { type: 'application/json' })); } catch (err) {}
+          form.hidden = true;
+          document.getElementById('apply-ok').hidden = false;
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }).catch(function () {
+          errEl.hidden = false;
+          btn.disabled = false; btn.textContent = 'Odeslat přihlášku';
+        });
+      });
+    })();
+  </script>
+</Base>
