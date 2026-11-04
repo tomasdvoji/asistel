@@ -88,5 +88,24 @@ const { title, description } = Astro.props;
   </script>
 
   <script src={base + "/script.js"} is:inline></script>
+  <script is:inline>
+    // Anonymni statistiky (bez cookies): zobrazeni stranky + kliky na kontakty a Objednat se
+    (function () {
+      var API = 'https://rezervace.webshowcase-tomas.workers.dev';
+      var SITE = location.hostname.indexOf('asistel') > -1 ? 'asistel' : 'alerta';
+      function send(path, data) {
+        try { navigator.sendBeacon(API + path, new Blob([JSON.stringify(data)], { type: 'application/json' })); } catch (e) {}
+      }
+      send('/hit', { site: SITE, path: location.pathname });
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest && e.target.closest('a');
+        if (!a) return;
+        var h = a.getAttribute('href') || '';
+        if (h.indexOf('tel:') === 0) send('/event', { site: SITE, name: 'tel' });
+        else if (h.indexOf('mailto:') === 0) send('/event', { site: SITE, name: 'mailto' });
+        else if (h.indexOf('/objednat') > -1) send('/event', { site: SITE, name: 'objednat-klik' });
+      });
+    })();
+  </script>
 </body>
 </html>
