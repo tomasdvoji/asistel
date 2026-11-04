@@ -97,7 +97,13 @@ const { title, description } = Astro.props;
       function send(path, data) {
         try { navigator.sendBeacon(API + path, new Blob([JSON.stringify(data)], { type: 'application/json' })); } catch (e) {}
       }
-      send('/hit', { site: SITE, path: location.pathname });
+      if (navigator.webdriver) return; // automatizovane prohlizece nepocitame
+      // zdroj navstevy (jen domena odkazujiciho webu) + typ zarizeni — zadne osobni udaje
+      var ref = '';
+      try { ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : ''; } catch (e) {}
+      var hit = { site: SITE, path: location.pathname, d: window.innerWidth < 768 ? 'm' : 'd' };
+      if (ref !== location.hostname.replace(/^www\./, '')) hit.r = ref || 'direct';
+      send('/hit', hit);
       document.addEventListener('click', function (e) {
         var a = e.target.closest && e.target.closest('a');
         if (!a) return;

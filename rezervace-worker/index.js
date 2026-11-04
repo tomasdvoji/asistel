@@ -61,7 +61,26 @@ export default {
       const site = b && SITES.includes(b.site) ? b.site : null;
       const val = String((b && (url.pathname === '/hit' ? b.path : b.name)) || '').slice(0, 80);
       if (!site || !val) return new Response('bad request', { status: 400, headers: cors });
-      await bump(env, site, url.pathname === '/hit' ? 'v' : 'e', val);
+      const ua = req.headers.get('user-agent') || '';
+      if (/bot|crawl|spider|headless|lighthouse|preview/i.test(ua)) return new Response('ok', { headers: cors });
+      if (url.pathname === '/event') {
+        await bump(env, site, 'e', val);
+        return new Response('ok', { headers: cors });
+      }
+      // /hit: zobrazeni + unikat (denni rotujici hash IP+UA, IP se nikdy neuklada), zdroj, zarizeni
+      const day = new Date().toISOString().slice(0, 10);
+      const key = `st:${site}:${day}`;
+      const data = (await env.BOOKINGS.get(key, 'json')) || { v: {}, e: {} };
+      data.v[val] = (data.v[val] || 0) + 1;
+      const ip = req.headers.get('cf-connecting-ip') || '';
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(day + '|' + DASH_KEY + '|' + ip + '|' + ua));
+      const h = [...new Uint8Array(buf).slice(0, 4)].map((x) => x.toString(16).padStart(2, '0')).join('');
+      (data.u = data.u || {})[h] = 1;
+      const ref = String(b.r || '').slice(0, 60).replace(/[^\w.-]/g, '');
+      if (ref) (data.r = data.r || {})[ref] = ((data.r || {})[ref] || 0) + 1;
+      const dev = b.d === 'm' ? 'm' : b.d === 'd' ? 'd' : null;
+      if (dev) (data.d = data.d || {})[dev] = ((data.d || {})[dev] || 0) + 1;
+      await env.BOOKINGS.put(key, JSON.stringify(data), { expirationTtl: STATS_TTL });
       return new Response('ok', { headers: cors });
     }
 
@@ -159,10 +178,16 @@ tr:last-child td{border-bottom:0}
   <div class="card"><h2>Akce návštěvníků</h2><table id="events"></table></div>
   <div class="card"><h2>Nejnavštěvovanější stránky</h2><table id="pages"></table></div>
 </div>
+<div class="cols">
+  <div class="card"><h2>Zdroje návštěv</h2><table id="refs"></table></div>
+  <div class="card"><h2>Zařízení</h2><table id="devs"></table></div>
+</div>
 </div>
 
 <script>
 const NAMES={rezervace:'Odeslané objednávky','objednat-klik':'Klik na „Objednat se“',tel:'Klik na telefon',mailto:'Klik na e-mail','kariera-klik':'Klik na Kariéru','pozice-klik':'Klik na volnou pozici',prihlaska:'Odeslané přihlášky (nábor)'};
+const REFS={direct:'Přímá návštěva','google.com':'Google','google.cz':'Google','seznam.cz':'Seznam','bing.com':'Bing','facebook.com':'Facebook','l.facebook.com':'Facebook','instagram.com':'Instagram','l.instagram.com':'Instagram','t-mobile.cz':'T-Mobile.cz','mapy.cz':'Mapy.cz','firmy.cz':'Firmy.cz'};
+const DEVS={m:'Mobil / tablet',d:'Počítač'};
 const PAGES={'/':'Úvod','/prodejny/':'Prodejny','/tym/':'Tým','/album/':'Fotoalbum','/kariera/':'Kariéra','/objednat/':'Objednání','/gdpr/':'GDPR'};
 let auth=null,days=30,timer=null;
 try{auth=JSON.parse(localStorage.getItem('dash-auth'))}catch(e){}
@@ -188,13 +213,18 @@ async function load(){
   if(!r.ok){$('logout').click();return}
   const data=(await r.json()).reverse();
   const views=data.reduce((a,d)=>a+sum(d.v),0), today=data[data.length-1]?sum(data[data.length-1].v):0;
-  const ev={},pg={};
-  data.forEach(d=>{for(const[k,n]of Object.entries(d.e))ev[k]=(ev[k]||0)+n;for(const[k,n]of Object.entries(d.v))pg[k]=(pg[k]||0)+n;});
+  const uniq=data.reduce((a,d)=>a+Object.keys(d.u||{}).length,0);
+  const ev={},pg={},rf={},dv={};
+  data.forEach(d=>{for(const[k,n]of Object.entries(d.e))ev[k]=(ev[k]||0)+n;for(const[k,n]of Object.entries(d.v))pg[k]=(pg[k]||0)+n;
+    for(const[k,n]of Object.entries(d.r||{}))rf[k]=(rf[k]||0)+n;for(const[k,n]of Object.entries(d.d||{}))dv[k]=(dv[k]||0)+n;});
+  const conv=uniq?Math.round((ev.rezervace||0)/uniq*100):0;
   $('tiles').innerHTML=
     '<div class="tile hl"><b>'+today+'</b><small>zobrazení dnes</small></div>'+
     '<div class="tile"><b>'+views+'</b><small>zobrazení za '+days+' dní</small></div>'+
+    '<div class="tile"><b>'+uniq+'</b><small>návštěvníků za '+days+' dní</small></div>'+
     '<div class="tile"><b>'+(ev.rezervace||0)+'</b><small>odeslaných objednávek</small></div>'+
-    '<div class="tile"><b>'+((ev['objednat-klik']||0)+(ev.tel||0)+(ev.mailto||0))+'</b><small>kliků na kontakty</small></div>';
+    '<div class="tile"><b>'+((ev['objednat-klik']||0)+(ev.tel||0)+(ev.mailto||0))+'</b><small>kliků na kontakty</small></div>'+
+    '<div class="tile"><b>'+conv+' %</b><small>návštěvníků odešle objednávku</small></div>';
   const svg=$('chart'),W=1000,H=170,n=data.length,max=Math.max(1,...data.map(d=>sum(d.v)));
   const bw=W/n;
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
@@ -208,6 +238,8 @@ async function load(){
     return es.map(([k,v])=>'<tr><td>'+label(k,names)+'</td><td style="width:34%"><div class="bar" style="width:'+Math.round(v/m*100)+'%"></div></td><td class="n">'+v+'</td></tr>').join('');};
   $('events').innerHTML=rows(ev,NAMES)||'<tr><td class="muted">zatím žádné akce</td></tr>';
   $('pages').innerHTML=rows(pg,PAGES)||'<tr><td class="muted">zatím žádná data</td></tr>';
+  $('refs').innerHTML=rows(rf,REFS)||'<tr><td class="muted">zatím žádná data (sbírá se od nasazení)</td></tr>';
+  $('devs').innerHTML=rows(dv,DEVS)||'<tr><td class="muted">zatím žádná data (sbírá se od nasazení)</td></tr>';
   $('upd').textContent='aktualizováno '+new Date().toLocaleTimeString('cs');
 }
 show();
