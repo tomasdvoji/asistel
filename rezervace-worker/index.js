@@ -88,51 +88,84 @@ export default {
 
 const DASH_HTML = `<!doctype html><html lang="cs"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Statistiky webu</title>
+<title>Statistiky — Alerta & Asistel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-body{font:15px/1.5 system-ui,sans-serif;background:#141414;color:#eee;margin:0;padding:24px;max-width:960px;margin-inline:auto}
-h1{font-size:1.4rem}h2{font-size:1.05rem;margin:26px 0 8px;color:#E20074}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
-.tile{background:#1f1f1f;border:1px solid #333;border-radius:12px;padding:14px 20px;min-width:120px}
-.tile b{display:block;font-size:1.6rem}
-table{border-collapse:collapse;width:100%}td,th{padding:6px 10px;border-bottom:1px solid #2c2c2c;text-align:left}
-th{color:#999;font-weight:600}td.n{text-align:right;font-variant-numeric:tabular-nums}
-select,button{background:#1f1f1f;color:#eee;border:1px solid #444;border-radius:8px;padding:6px 12px;font:inherit}
-.muted{color:#888;font-size:.85rem}
+:root{--mag:#E20074;--bg:#121212;--card:#1c1c1e;--line:#2d2d30;--dim:#9a9aa0}
+*{box-sizing:border-box}
+body{font:15px/1.5 Inter,system-ui,sans-serif;background:var(--bg);color:#f2f2f2;margin:0;padding:28px 20px;max-width:1020px;margin-inline:auto}
+header{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+h1{font-size:1.35rem;margin:0;font-weight:800}h1 span{color:var(--mag)}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px}
+.seg button{background:none;border:0;color:var(--dim);font:inherit;font-weight:600;padding:6px 16px;border-radius:999px;cursor:pointer}
+.seg button.on{background:var(--mag);color:#fff}
+.muted{color:var(--dim);font-size:.83rem;margin:4px 0 20px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin:0 0 22px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px}
+.tile b{display:block;font-size:1.9rem;font-weight:800;letter-spacing:-.5px}
+.tile small{color:var(--dim)}
+.tile.hl{border-color:var(--mag);box-shadow:0 0 24px rgba(226,0,116,.12)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.card h2{font-size:.95rem;margin:0 0 12px;color:var(--mag);text-transform:uppercase;letter-spacing:.4px}
+#chart{width:100%;height:170px;display:block}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:720px){.cols{grid-template-columns:1fr}}
+table{border-collapse:collapse;width:100%;font-size:.92rem}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--dim);font-weight:600;font-size:.8rem;text-transform:uppercase;letter-spacing:.4px}
+td.n{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+tr:last-child td{border-bottom:0}
+.bar{height:7px;border-radius:4px;background:var(--mag);min-width:3px;opacity:.85}
+.pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:#2ecc71;margin-right:6px;animation:p 2s infinite}
+@keyframes p{50%{opacity:.3}}
 </style></head><body>
-<h1>Statistiky <select id="site"><option>alerta</option><option>asistel</option></select>
-<select id="days"><option value="7">7 dní</option><option value="30" selected>30 dní</option><option value="90">90 dní</option></select></h1>
-<p class="muted">Anonymní počty bez cookies. Obnovuje se každých 30 s — <span id="upd"></span></p>
-<div class="row" id="tiles"></div>
-<h2>Akce návštěvníků</h2><table id="events"></table>
-<h2>Nejnavštěvovanější stránky</h2><table id="pages"></table>
-<h2>Po dnech</h2><table id="daily"></table>
+<header>
+  <h1>Statistiky<span>.</span></h1>
+  <div class="seg" id="site"><button data-v="alerta" class="on">Alerta</button><button data-v="asistel">Asistel</button></div>
+  <div class="seg" id="days"><button data-v="7">7 dní</button><button data-v="30" class="on">30 dní</button><button data-v="90">90 dní</button></div>
+</header>
+<p class="muted"><span class="pulse"></span>Živě — obnovuje se každých 30 s · anonymní počty bez cookies · <span id="upd"></span></p>
+<div class="tiles" id="tiles"></div>
+<div class="card"><h2>Zobrazení po dnech</h2><svg id="chart" preserveAspectRatio="none"></svg><div class="muted" id="chartlab" style="display:flex;justify-content:space-between;margin:6px 0 0"></div></div>
+<div class="cols">
+  <div class="card"><h2>Akce návštěvníků</h2><table id="events"></table></div>
+  <div class="card"><h2>Nejnavštěvovanější stránky</h2><table id="pages"></table></div>
+</div>
 <script>
 const KEY=new URLSearchParams(location.search).get('key');
-const NAMES={rezervace:'Odeslané objednávky','objednat-klik':'Klik na Objednat se',tel:'Klik na telefon',mailto:'Klik na e-mail'};
+const NAMES={rezervace:'Odeslané objednávky','objednat-klik':'Klik na „Objednat se"',tel:'Klik na telefon',mailto:'Klik na e-mail'};
+const PAGES={'/':'Úvod','/prodejny/':'Prodejny','/tym/':'Tým','/album/':'Fotoalbum','/kariera/':'Kariéra','/objednat/':'Objednání','/gdpr/':'GDPR'};
+let site='alerta',days=30;
+function seg(id,cb){document.getElementById(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;
+  [...e.currentTarget.children].forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v);load();});}
+seg('site',v=>site=v);seg('days',v=>days=+v);
+const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
 async function load(){
-  const site=document.getElementById('site').value, days=document.getElementById('days').value;
   const r=await fetch('/stats?site='+site+'&days='+days+'&key='+encodeURIComponent(KEY));
-  if(!r.ok){document.body.innerHTML='<p>Přístup odepřen.</p>';return}
-  const data=await r.json();
-  const sum=o=>Object.values(o).reduce((a,b)=>a+b,0);
-  const views=data.reduce((a,d)=>a+sum(d.v),0);
-  const today=data[0]?sum(data[0].v):0;
+  if(!r.ok){document.body.innerHTML='<p style="padding:40px">Přístup odepřen.</p>';return}
+  const data=(await r.json()).reverse(); // nejstarsi -> dnesek
+  const views=data.reduce((a,d)=>a+sum(d.v),0), today=data[data.length-1]?sum(data[data.length-1].v):0;
   const ev={},pg={};
   data.forEach(d=>{for(const[k,n]of Object.entries(d.e))ev[k]=(ev[k]||0)+n;for(const[k,n]of Object.entries(d.v))pg[k]=(pg[k]||0)+n;});
   document.getElementById('tiles').innerHTML=
-    '<div class="tile"><b>'+today+'</b>zobrazení dnes</div>'+
-    '<div class="tile"><b>'+views+'</b>zobrazení za '+days+' dní</div>'+
-    '<div class="tile"><b>'+(ev.rezervace||0)+'</b>objednávek</div>'+
-    '<div class="tile"><b>'+(ev['objednat-klik']||0)+'</b>kliků na Objednat</div>';
-  const rows=(obj,label)=>'<tr><th>'+label+'</th><th class="n">počet</th></tr>'+Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,15)
-    .map(([k,n])=>'<tr><td>'+(NAMES[k]||k)+'</td><td class="n">'+n+'</td></tr>').join('');
-  document.getElementById('events').innerHTML=rows(ev,'akce')||'<tr><td class="muted">zatím nic</td></tr>';
-  document.getElementById('pages').innerHTML=rows(pg,'stránka');
-  document.getElementById('daily').innerHTML='<tr><th>den</th><th class="n">zobrazení</th><th class="n">akce</th></tr>'+
-    data.map(d=>'<tr><td>'+d.date+'</td><td class="n">'+sum(d.v)+'</td><td class="n">'+sum(d.e)+'</td></tr>').join('');
+    '<div class="tile hl"><b>'+today+'</b><small>zobrazení dnes</small></div>'+
+    '<div class="tile"><b>'+views+'</b><small>zobrazení za '+days+' dní</small></div>'+
+    '<div class="tile"><b>'+(ev.rezervace||0)+'</b><small>odeslaných objednávek</small></div>'+
+    '<div class="tile"><b>'+((ev['objednat-klik']||0)+(ev.tel||0)+(ev.mailto||0))+'</b><small>kliků na kontakty</small></div>';
+  // graf
+  const svg=document.getElementById('chart');const W=1000,H=170,n=data.length,max=Math.max(1,...data.map(d=>sum(d.v)));
+  const bw=W/n;
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  svg.innerHTML=data.map((d,i)=>{const h=Math.round(sum(d.v)/max*(H-24));
+    return '<rect x="'+(i*bw+1).toFixed(1)+'" y="'+(H-h)+'" width="'+Math.max(1,bw-2).toFixed(1)+'" height="'+h+'" rx="2" fill="#E20074" opacity="'+(i===n-1?'1':'0.55')+'"><title>'+d.date+': '+sum(d.v)+'</title></rect>';}).join('');
+  document.getElementById('chartlab').innerHTML='<span>'+data[0].date.slice(5)+'</span><span>max '+max+' / den</span><span>'+data[n-1].date.slice(5)+'</span>';
+  // tabulky s pruhy
+  const rows=(obj,names)=>{const es=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,12);const m=Math.max(1,...es.map(e=>e[1]));
+    return es.map(([k,v])=>'<tr><td>'+((names&&names[k])||k)+'</td><td style="width:34%"><div class="bar" style="width:'+Math.round(v/m*100)+'%"></div></td><td class="n">'+v+'</td></tr>').join('');};
+  document.getElementById('events').innerHTML=rows(ev,NAMES)||'<tr><td class="muted">zatím žádné akce</td></tr>';
+  document.getElementById('pages').innerHTML=rows(pg,PAGES)||'<tr><td class="muted">zatím žádná data</td></tr>';
   document.getElementById('upd').textContent='aktualizováno '+new Date().toLocaleTimeString('cs');
 }
-document.getElementById('site').onchange=load;document.getElementById('days').onchange=load;
 load();setInterval(load,30000);
 </script></body></html>`;
