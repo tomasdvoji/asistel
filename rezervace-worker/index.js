@@ -201,8 +201,11 @@ async function load(){
   svg.innerHTML=data.map((d,i)=>{const h=Math.round(sum(d.v)/max*(H-24));
     return '<rect x="'+(i*bw+1).toFixed(1)+'" y="'+(H-h)+'" width="'+Math.max(1,bw-2).toFixed(1)+'" height="'+h+'" rx="2" fill="#E20074" opacity="'+(i===n-1?'1':'0.55')+'"><title>'+d.date+': '+sum(d.v)+'</title></rect>';}).join('');
   $('chartlab').innerHTML='<span>'+data[0].date.slice(5)+'</span><span>max '+max+' / den</span><span>'+data[n-1].date.slice(5)+'</span>';
-  const rows=(obj,names)=>{const es=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,12);const m=Math.max(1,...es.map(e=>e[1]));
-    return es.map(([k,v])=>'<tr><td>'+((names&&names[k])||k)+'</td><td style="width:34%"><div class="bar" style="width:'+Math.round(v/m*100)+'%"></div></td><td class="n">'+v+'</td></tr>').join('');};
+  const label=(k,names)=>{if(names&&names[k])return names[k];const i=k.indexOf(':');
+    if(i>0){const base=names&&names[k.slice(0,i)]?names[k.slice(0,i)]:k.slice(0,i);
+      const suf=k.slice(i+1).replace(/-/g,' ');return base+' — '+suf.charAt(0).toUpperCase()+suf.slice(1);}return k;};
+  const rows=(obj,names)=>{const es=Object.entries(obj).sort((a,b)=>b[1]-a[1]).slice(0,40);const m=Math.max(1,...es.map(e=>e[1]));
+    return es.map(([k,v])=>'<tr><td>'+label(k,names)+'</td><td style="width:34%"><div class="bar" style="width:'+Math.round(v/m*100)+'%"></div></td><td class="n">'+v+'</td></tr>').join('');};
   $('events').innerHTML=rows(ev,NAMES)||'<tr><td class="muted">zatím žádné akce</td></tr>';
   $('pages').innerHTML=rows(pg,PAGES)||'<tr><td class="muted">zatím žádná data</td></tr>';
   $('upd').textContent='aktualizováno '+new Date().toLocaleTimeString('cs');
