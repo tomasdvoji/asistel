@@ -240,7 +240,7 @@ h3 { font-size: 1.15rem; font-weight: 600; }
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .js [data-reveal] { opacity: 1 !important; transform: none !important; }
-  .js .map-wrap .cz-outline { stroke-dashoffset: 0 !important; stroke: var(--border) !important; }
+  .js .map-wrap .cz-outline { stroke-dashoffset: 0 !important; stroke: rgba(226, 0, 116, 0.4) !important; }
   .js .map-wrap .shop-dot { opacity: 1 !important; }
   .spotlight { translate: none; }
 }
@@ -390,8 +390,8 @@ h3 { font-size: 1.15rem; font-weight: 600; }
 
 .cz-outline {
   fill: rgba(226, 0, 116, 0.04);
-  stroke: var(--border);
-  stroke-width: 1.5;
+  stroke: rgba(226, 0, 116, 0.4);
+  stroke-width: 2;
   stroke-linejoin: round;
 }
 /* mapa se "nakresli" pri odhaleni sekce, body naskoci postupne */
@@ -401,7 +401,7 @@ h3 { font-size: 1.15rem; font-weight: 600; }
   stroke-dashoffset: 1;
   transition: stroke-dashoffset 1.8s var(--ease) 0.2s, stroke 1s ease 1.6s;
 }
-.js .map-wrap.in .cz-outline { stroke-dashoffset: 0; stroke: var(--border); }
+.js .map-wrap.in .cz-outline { stroke-dashoffset: 0; stroke: rgba(226, 0, 116, 0.4); }
 .js .map-wrap .shop-dot { opacity: 0; transition: opacity 0.45s var(--ease); }
 .js .map-wrap.in .shop-dot { opacity: 1; }
 .js .map-wrap.in .cz-map a:nth-of-type(1) .shop-dot { transition-delay: 0.9s; }
