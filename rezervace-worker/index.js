@@ -221,7 +221,8 @@ tr:last-child td{border-bottom:0}
 <header>
   <h1 id="title">Statistiky<span>.</span></h1>
   <div class="seg" id="days"><button data-v="7">7 dní</button><button data-v="30" class="on">30 dní</button><button data-v="90">90 dní</button></div>
-  <button id="logout">Odhlásit</button>
+  <a href="/padmin" id="padminlink" style="margin-left:auto;display:inline-block;background:var(--mag);color:#fff;border-radius:999px;padding:7px 16px;font-weight:700;text-decoration:none">Volné pozice ✎</a>
+  <button id="logout" style="margin-left:0">Odhlásit</button>
 </header>
 <p class="muted"><span class="pulse"></span>Živě — obnovuje se každých 30 s · anonymní počty bez cookies · <span id="upd"></span></p>
 <div class="tiles" id="tiles"></div>
@@ -335,7 +336,9 @@ button.ghost{background:none;border:1px solid var(--line);color:var(--dim)}
 </div>
 
 <div id="app" hidden>
-<header><h1 id="title">Volné pozice<span>.</span></h1><button id="logout">Odhlásit</button></header>
+<header><h1 id="title">Volné pozice<span>.</span></h1>
+  <a href="/dash" style="margin-left:auto;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:6px 14px;text-decoration:none;font-size:.9rem">← Statistiky</a>
+  <button id="logout" style="margin-left:0">Odhlásit</button></header>
 <p class="muted">Změny se po uložení projeví na webu zhruba do 2 minut. Prázdný text inzerátu = použije se přednastavený text s benefity.</p>
 <div id="list"></div>
 <div class="bar">
