@@ -11,6 +11,28 @@ export async function getStaticPaths() {
 }
 const { p } = Astro.props;
 const text = p.text || `Do naší prodejny T-Mobile v místě ${p.misto} hledáme novou posilu. Nemusíš mít roky zkušeností v obchodě — důležitější je pro nás, jaký jsi člověk a jak k práci přistupuješ. Čeká tě každodenní kontakt se zákazníky, prodej telefonů, tarifů a služeb, pořádné zaškolení a podpora týmu, který tě v ničem nenechá samotného. Mzda 30 000–55 000 Kč podle výsledků, 75% sleva na služby T-Mobile, příspěvek na telefon, stravenky a další benefity.`;
+
+// Vlastni text inzeratu: radky s *, - nebo ✔ jsou odrazky, kratke radky s ? nebo : nadpisy.
+const custom = (p.text || '').trim();
+const escHtml = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+let descHtml = '';
+if (custom) {
+  let inUl = false;
+  for (const raw of custom.split(/\r?\n/)) {
+    const l = raw.trim();
+    if (!l) continue;
+    const li = l.match(/^[*•–-]\s*(.*)/);
+    if (li) {
+      if (!inUl) { descHtml += '<ul class="job-list">'; inUl = true; }
+      descHtml += '<li>' + escHtml(li[1]) + '</li>';
+      continue;
+    }
+    if (inUl) { descHtml += '</ul>'; inUl = false; }
+    if (l.length < 70 && /[?:]$/.test(l)) descHtml += '<h3 style="margin-top:18px">' + escHtml(l) + '</h3>';
+    else descHtml += '<p style="margin-top:10px">' + escHtml(l) + '</p>';
+  }
+  if (inUl) descHtml += '</ul>';
+}
 ---
 <Base title={`${p.title} — ${p.misto} | ${site.name}`} description={`Volná pozice ${p.title} na prodejně T-Mobile ${p.misto}.`}>
   <section class="section page-head">
@@ -24,15 +46,21 @@ const text = p.text || `Do naší prodejny T-Mobile v místě ${p.misto} hledám
     <div class="container booking">
       <div class="card" data-reveal style="margin-bottom:20px">
         <h2 class="grad-text" style="margin-bottom:12px">O pozici</h2>
-        <p>{text}</p>
-        {k.sections.map((sec) => (
-          <div style="margin-top:18px">
-            <h3>{sec.heading}</h3>
-            <ul class="job-list">
-              {sec.items.map((item) => <li>{item}</li>)}
-            </ul>
-          </div>
-        ))}
+        {custom ? (
+          <div set:html={descHtml} />
+        ) : (
+          <>
+            <p>{text}</p>
+            {k.sections.map((sec) => (
+              <div style="margin-top:18px">
+                <h3>{sec.heading}</h3>
+                <ul class="job-list">
+                  {sec.items.map((item) => <li>{item}</li>)}
+                </ul>
+              </div>
+            ))}
+          </>
+        )}
       </div>
 
       <div class="card booking-form">
