@@ -22,8 +22,21 @@ const text = p.text || `Do naší prodejny T-Mobile v místě ${p.misto} hledám
   </section>
   <section class="section" style="padding-top:0">
     <div class="container booking">
+      <div class="card" data-reveal style="margin-bottom:20px">
+        <h2 class="grad-text" style="margin-bottom:12px">O pozici</h2>
+        <p>{text}</p>
+        {k.sections.map((sec) => (
+          <div style="margin-top:18px">
+            <h3>{sec.heading}</h3>
+            <ul class="job-list">
+              {sec.items.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+        ))}
+      </div>
+
       <div class="card booking-form">
-        <p style="margin-bottom:22px">{text}</p>
+        <h2 class="grad-text" style="margin-bottom:16px">Přihláška</h2>
 
         <form id="apply-form" novalidate>
           <div class="form-row">
@@ -41,12 +54,12 @@ const text = p.text || `Do naší prodejny T-Mobile v místě ${p.misto} hledám
             </div>
           </div>
           <div class="form-field">
-            <label for="af-msg">Pár slov o vás (nepovinné)</label>
-            <textarea id="af-msg" name="zprava" rows="4" placeholder="Např. dosavadní zkušenosti, odkdy můžete nastoupit…"></textarea>
+            <label for="af-cv">Zde nahrajte svůj životopis (CV) — PDF nebo Word, max 5 MB</label>
+            <input id="af-cv" name="cv" type="file" accept=".pdf,.doc,.docx,.odt,.rtf">
           </div>
           <div class="form-field">
-            <label for="af-cv">Životopis (PDF nebo Word, max 5 MB — nepovinné)</label>
-            <input id="af-cv" name="cv" type="file" accept=".pdf,.doc,.docx,.odt,.rtf">
+            <label for="af-msg">Chcete nám něco dodat? (nepovinné)</label>
+            <textarea id="af-msg" name="zprava" rows="3" placeholder="Např. odkdy můžete nastoupit…"></textarea>
           </div>
           <p class="form-error muted" id="af-error" hidden>Přihlášku se nepodařilo odeslat. Zkuste to prosím znovu, nebo napište přímo na {k.email}.</p>
           <p style="margin-top:8px"><button class="btn btn-primary" type="submit" id="af-submit">Odeslat přihlášku</button></p>

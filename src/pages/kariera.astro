@@ -19,6 +19,13 @@ const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
 
   <section class="section" style="padding-top:0">
     <div class="container job">
+      <div class="card job-contact" data-reveal>
+        <h2 class="grad-text">{k.contactHeading}</h2>
+        {k.email && <p>{k.contactEmailLabel} <a href={`mailto:${k.email}`}>{k.email}</a></p>}
+        {k.phone && <p>{k.contactPhoneLabel} <a href={`tel:${k.phone.replace(/\s/g, '')}`}>{k.phone}</a></p>}
+        {!k.email && !k.phone && <p class="muted">Kontakty brzy doplníme — zatím se podívejte na naše nabídky níže.</p>}
+      </div>
+
       {pozice.items.length > 0 && (
       <div class="job-section" id="pozice" data-reveal>
         <h2>Aktuálně volné pozice</h2>
@@ -33,22 +40,6 @@ const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
         </div>
       </div>
       )}
-
-      <div class="card job-contact" data-reveal>
-        <h2 class="grad-text">{k.contactHeading}</h2>
-        {k.email && <p>{k.contactEmailLabel} <a href={`mailto:${k.email}`}>{k.email}</a></p>}
-        {k.phone && <p>{k.contactPhoneLabel} <a href={`tel:${k.phone.replace(/\s/g, '')}`}>{k.phone}</a></p>}
-        {!k.email && !k.phone && <p class="muted">Kontakty brzy doplníme — zatím se podívejte na naše nabídky níže.</p>}
-      </div>
-
-      {k.sections.map((sec) => (
-        <div class="job-section" data-reveal>
-          <h2>{sec.heading}</h2>
-          <ul class="job-list">
-            {sec.items.map((item) => <li>{item}</li>)}
-          </ul>
-        </div>
-      ))}
 
       <p class="job-cta" data-reveal>
         <a class="btn btn-primary" href={k.praceUrl} target="_blank" rel="noopener">{k.praceLabel}</a>
