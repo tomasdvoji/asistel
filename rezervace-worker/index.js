@@ -114,6 +114,54 @@ export default {
       return new Response(DASH_HTML, { headers: { 'Content-Type': 'text/html;charset=utf-8' } });
     }
 
+    // ---------- jednoducha administrace volnych pozic (bez GitHub uctu) ----------
+    if (req.method === 'GET' && url.pathname === '/padmin') {
+      return new Response(PADMIN_HTML, { headers: { 'Content-Type': 'text/html;charset=utf-8' } });
+    }
+    if (url.pathname === '/pozice') {
+      const site = url.searchParams.get('site');
+      const k = url.searchParams.get('key');
+      if (!SITES.includes(site) || (k !== DASH_KEY && k !== ACCOUNTS[site].key)) {
+        return new Response('forbidden', { status: 403, headers: cors });
+      }
+      if (!env.GH_TOKEN) return new Response('GH_TOKEN neni nastaveny (wrangler secret put GH_TOKEN)', { status: 503, headers: cors });
+      const REPOS = { alerta: 'tomasdvoji/Alerta1', asistel: 'tomasdvoji/asistel' };
+      const api = 'https://api.github.com/repos/' + REPOS[site] + '/contents/src/data/editable/pozice.json';
+      const gh = { Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'pozice-admin', Accept: 'application/vnd.github+json' };
+      if (req.method === 'GET') {
+        const r = await fetch(api, { headers: gh });
+        if (!r.ok) return new Response('github ' + r.status, { status: 502, headers: cors });
+        const j = await r.json();
+        const txt = new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g, '')), (c) => c.charCodeAt(0)));
+        return Response.json({ items: JSON.parse(txt).items || [] }, { headers: cors });
+      }
+      if (req.method === 'POST') {
+        let b;
+        try { b = await req.json(); } catch { return new Response('bad request', { status: 400, headers: cors }); }
+        if (!Array.isArray(b.items) || b.items.length > 30) return new Response('bad request', { status: 400, headers: cors });
+        const slug = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+        const items = b.items.map((p) => ({
+          id: slug(p.id || (String(p.title || 'pozice') + '-' + String(p.misto || ''))),
+          title: String(p.title || '').slice(0, 80).trim(),
+          misto: String(p.misto || '').slice(0, 60).trim(),
+          typ: String(p.typ || 'Plný úvazek').slice(0, 40).trim(),
+          text: String(p.text || '').slice(0, 4000),
+        })).filter((p) => p.id && p.title && p.misto);
+        const cur = await fetch(api, { headers: gh });
+        const sha = cur.ok ? (await cur.json()).sha : undefined;
+        const body = JSON.stringify({ items }, null, 2) + '\n';
+        const bytes = new TextEncoder().encode(body);
+        let bin = ''; for (const x of bytes) bin += String.fromCharCode(x);
+        const r = await fetch(api, {
+          method: 'PUT',
+          headers: { ...gh, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: 'pozice: uprava pres administraci naboru', content: btoa(bin), sha }),
+        });
+        if (!r.ok) return new Response('github ' + r.status, { status: 502, headers: cors });
+        return Response.json({ ok: true, count: items.length }, { headers: cors });
+      }
+    }
+
     return new Response('not found', { status: 404, headers: cors });
   },
 };
@@ -246,6 +294,113 @@ async function load(){
   $('devs').innerHTML=rows(dv,DEVS)||'<tr><td class="muted">zatím žádná data (sbírá se od nasazení)</td></tr>';
   $('upd').textContent='aktualizováno '+new Date().toLocaleTimeString('cs');
 }
+show();
+</script></body></html>
+`;
+
+const PADMIN_HTML = `<!doctype html><html lang="cs"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Nábor — volné pozice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--mag:#E20074;--bg:#121212;--card:#1c1c1e;--line:#2d2d30;--dim:#9a9aa0}
+*{box-sizing:border-box}
+body{font:15px/1.5 Inter,system-ui,sans-serif;background:var(--bg);color:#f2f2f2;margin:0;padding:28px 20px;max-width:820px;margin-inline:auto}
+h1{font-size:1.35rem;margin:0;font-weight:800}h1 span{color:var(--mag)}
+header{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.muted{color:var(--dim);font-size:.85rem;margin:6px 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:14px}
+label{display:block;font-size:.8rem;color:var(--dim);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#141414;color:#fff;font:inherit}
+textarea{min-height:90px}
+button{border:0;border-radius:999px;background:var(--mag);color:#fff;font:inherit;font-weight:700;cursor:pointer;padding:10px 20px}
+button.ghost{background:none;border:1px solid var(--line);color:var(--dim)}
+.row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:640px){.row{grid-template-columns:1fr}}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:16px 0}
+#msg{font-size:.9rem}
+#msg.ok{color:#2ecc71}#msg.err{color:#ff5c8a}
+#login{max-width:360px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px}
+#logout{margin-left:auto;background:none;border:1px solid var(--line);color:var(--dim);padding:6px 14px}
+[hidden]{display:none!important}
+</style></head><body>
+
+<div id="login" hidden>
+  <h1>Nábor<span>.</span></h1>
+  <label>Uživatel</label><input id="lu" autocomplete="username">
+  <label>Heslo</label><input id="lp" type="password" autocomplete="current-password">
+  <p style="margin-top:18px"><button id="lbtn" style="width:100%">Přihlásit se</button></p>
+  <p id="lerr" style="color:#ff5c8a;font-size:.85rem;display:none">Špatné jméno nebo heslo.</p>
+</div>
+
+<div id="app" hidden>
+<header><h1 id="title">Volné pozice<span>.</span></h1><button id="logout">Odhlásit</button></header>
+<p class="muted">Změny se po uložení projeví na webu zhruba do 2 minut. Prázdný text inzerátu = použije se přednastavený text s benefity.</p>
+<div id="list"></div>
+<div class="bar">
+  <button class="ghost" id="add">+ Přidat pozici</button>
+  <button id="save">Uložit změny</button>
+  <span id="msg"></span>
+</div>
+</div>
+
+<script>
+var LOC={asistel:['Rychnov nad Kněžnou','Benešov','Vrchlabí','Turnov','Třebíč','Jindřichův Hradec','Trutnov','Náchod','Litomyšl','Ústí nad Orlicí','Vedení firmy'],
+alerta:['Jablonec nad Nisou','Mladá Boleslav','Děčín','Teplice','Litoměřice','Praha-Dejvice','Praha-Hostivař','Písek','Klatovy','Vedení firmy']};
+var auth=null,items=[];
+try{auth=JSON.parse(localStorage.getItem('dash-auth'))}catch(e){}
+function $(id){return document.getElementById(id)}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function render(){
+  var out='';
+  for(var i=0;i<items.length;i++){var p=items[i];
+    var opts=LOC[auth.site].map(function(m){return '<option'+(m===p.misto?' selected':'')+'>'+esc(m)+'</option>'}).join('');
+    out+='<div class="card" data-i="'+i+'"><div class="row">'+
+      '<div><label>Název pozice</label><input class="f-title" value="'+esc(p.title)+'"></div>'+
+      '<div><label>Lokace</label><select class="f-misto">'+opts+'</select></div>'+
+      '<div><label>Úvazek</label><input class="f-typ" value="'+esc(p.typ)+'"></div></div>'+
+      '<label>Text inzerátu (nepovinné)</label><textarea class="f-text">'+esc(p.text||'')+'</textarea>'+
+      '<p style="margin:12px 0 0"><button class="ghost del">Smazat pozici</button></p></div>';
+  }
+  $('list').innerHTML=out||'<p class="muted">Zatím žádné pozice — přidejte první tlačítkem níže.</p>';
+}
+function collect(){
+  var cards=document.querySelectorAll('#list .card');items=[];
+  for(var i=0;i<cards.length;i++){var c=cards[i];
+    items.push({title:c.querySelector('.f-title').value,misto:c.querySelector('.f-misto').value,
+      typ:c.querySelector('.f-typ').value,text:c.querySelector('.f-text').value});}
+}
+function show(){
+  $('login').hidden=!!auth;$('app').hidden=!auth;
+  if(!auth)return;
+  $('title').innerHTML='Volné pozice '+auth.site.charAt(0).toUpperCase()+auth.site.slice(1)+'<span>.</span>';
+  fetch('/pozice?site='+auth.site+'&key='+encodeURIComponent(auth.key))
+    .then(function(r){if(!r.ok)throw 0;return r.json()})
+    .then(function(d){items=d.items;render()})
+    .catch(function(){$('msg').className='err';$('msg').textContent='Načtení se nepovedlo — zkuste obnovit stránku.'});
+}
+$('lbtn').onclick=function(){
+  fetch('/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({user:$('lu').value,pass:$('lp').value})})
+    .then(function(r){if(!r.ok)throw 0;return r.json()})
+    .then(function(a){auth=a;try{localStorage.setItem('dash-auth',JSON.stringify(a))}catch(e){};show()})
+    .catch(function(){$('lerr').style.display='block'});
+};
+$('lp').addEventListener('keydown',function(e){if(e.key==='Enter')$('lbtn').click()});
+$('logout').onclick=function(){auth=null;try{localStorage.removeItem('dash-auth')}catch(e){};show()};
+$('add').onclick=function(){collect();items.push({title:'Prodejní konzultant/ka',misto:LOC[auth.site][0],typ:'Plný úvazek',text:''});render()};
+$('list').addEventListener('click',function(e){
+  if(!e.target.classList.contains('del'))return;
+  collect();items.splice(+e.target.closest('.card').dataset.i,1);render();
+});
+$('save').onclick=function(){
+  collect();$('msg').className='';$('msg').textContent='Ukládám…';
+  fetch('/pozice?site='+auth.site+'&key='+encodeURIComponent(auth.key),{method:'POST',
+    headers:{'Content-Type':'application/json'},body:JSON.stringify({items:items})})
+    .then(function(r){if(!r.ok)throw 0;return r.json()})
+    .then(function(){$('msg').className='ok';$('msg').textContent='Uloženo ✓ Web se obnoví do pár minut.'})
+    .catch(function(){$('msg').className='err';$('msg').textContent='Uložení se nepovedlo. Zkuste to znovu.'});
+};
 show();
 </script></body></html>
 `;
