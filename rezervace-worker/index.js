@@ -124,17 +124,16 @@ export default {
       if (!SITES.includes(site) || (k !== DASH_KEY && k !== ACCOUNTS[site].key)) {
         return new Response('forbidden', { status: 403, headers: cors });
       }
-      if (!env.GH_TOKEN) return new Response('GH_TOKEN neni nastaveny (wrangler secret put GH_TOKEN)', { status: 503, headers: cors });
       const REPOS = { alerta: 'tomasdvoji/Alerta1', asistel: 'tomasdvoji/asistel' };
       const api = 'https://api.github.com/repos/' + REPOS[site] + '/contents/src/data/editable/pozice.json';
       const gh = { Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'pozice-admin', Accept: 'application/vnd.github+json' };
       if (req.method === 'GET') {
-        const r = await fetch(api, { headers: gh });
+        // cteni z verejneho repa nepotrebuje token
+        const r = await fetch('https://raw.githubusercontent.com/' + REPOS[site] + '/main/src/data/editable/pozice.json', { headers: { 'User-Agent': 'pozice-admin' } });
         if (!r.ok) return new Response('github ' + r.status, { status: 502, headers: cors });
-        const j = await r.json();
-        const txt = new TextDecoder().decode(Uint8Array.from(atob(j.content.replace(/\n/g, '')), (c) => c.charCodeAt(0)));
-        return Response.json({ items: JSON.parse(txt).items || [] }, { headers: cors });
+        return Response.json({ items: (await r.json()).items || [] }, { headers: cors });
       }
+      if (!env.GH_TOKEN) return new Response('GH_TOKEN neni nastaveny (wrangler secret put GH_TOKEN)', { status: 503, headers: cors });
       if (req.method === 'POST') {
         let b;
         try { b = await req.json(); } catch { return new Response('bad request', { status: 400, headers: cors }); }
