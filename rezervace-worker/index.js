@@ -19,14 +19,18 @@ async function bump(env, site, kind, name) {
   await env.BOOKINGS.put(key, JSON.stringify(data), { expirationTtl: STATS_TTL });
 }
 
-const cors = {
-  'Access-Control-Allow-Origin': '*',
+// sendBeacon posila credentials -> ACAO nesmi byt '*', zrcadlime konkretni Origin
+const corsFor = (req) => ({
+  'Access-Control-Allow-Origin': req.headers.get('Origin') || '*',
   'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
-};
+  'Access-Control-Allow-Credentials': 'true',
+  'Vary': 'Origin',
+});
 
 export default {
   async fetch(req, env) {
+    const cors = corsFor(req);
     if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
     const url = new URL(req.url);
 

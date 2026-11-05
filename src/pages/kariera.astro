@@ -11,13 +11,16 @@ const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
       <span class="eyebrow">{k.eyebrow}</span>
       <h1 class="grad-text">{k.title}</h1>
       <p class="muted">{k.intro}</p>
+      {pozice.items.length > 0 && (
+      <p style="margin-top:18px"><a class="btn btn-primary" href="#pozice">Aktuálně volné pozice ↓</a></p>
+      )}
     </div>
   </section>
 
   <section class="section" style="padding-top:0">
     <div class="container job">
       {pozice.items.length > 0 && (
-      <div class="job-section" data-reveal>
+      <div class="job-section" id="pozice" data-reveal>
         <h2>Aktuálně volné pozice</h2>
         <div class="pozice-grid">
           {pozice.items.map((p) => (

@@ -164,7 +164,7 @@ collections:
             fields:
               - { name: "id", label: "Adresa (slug)", widget: "string", hint: "Bez diakritiky a mezer, např. prodejni-konzultant-trutnov. Určuje adresu stránky." }
               - { name: "title", label: "Název pozice", widget: "string", default: "Prodejní konzultant/ka" }
-              - { name: "misto", label: "Město / prodejna", widget: "string" }
+              - { name: "misto", label: "Lokace (prodejna)", widget: "select", options: ["Rychnov nad Kněžnou", "Benešov", "Vrchlabí", "Turnov", "Třebíč", "Jindřichův Hradec", "Trutnov", "Náchod", "Litomyšl", "Ústí nad Orlicí", "Vedení firmy"] }
               - { name: "typ", label: "Úvazek", widget: "string", default: "Plný úvazek" }
               - { name: "text", label: "Text inzerátu", widget: "text", required: false, hint: "Když necháte prázdné, použije se přednastavený text s benefity. Pro seniorní pozice přepište." }
 
