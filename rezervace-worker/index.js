@@ -362,7 +362,7 @@ function render(){
       '<div><label>Název pozice</label><input class="f-title" value="'+esc(p.title)+'"></div>'+
       '<div><label>Lokace</label><select class="f-misto">'+opts+'</select></div>'+
       '<div><label>Úvazek</label><input class="f-typ" value="'+esc(p.typ)+'"></div></div>'+
-      '<label>Text inzerátu (nepovinné)</label><textarea class="f-text">'+esc(p.text||'')+'</textarea>'+
+      '<label>Text inzerátu (nepovinné)</label><textarea class="f-text" placeholder="Prázdné = na webu se zobrazí přednastavený inzerát s benefity a mzdou. Vyplňte jen, když chcete vlastní text.">'+esc(p.text||'')+'</textarea>'+
       '<p style="margin:12px 0 0"><button class="ghost del">Smazat pozici</button></p></div>';
   }
   $('list').innerHTML=out||'<p class="muted">Zatím žádné pozice — přidejte první tlačítkem níže.</p>';
