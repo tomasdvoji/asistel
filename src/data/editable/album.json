@@ -4,6 +4,10 @@
   "lead": "Výlety, teambuildingy i obyčejné společné večery — prohlédněte si, jak to u nás vypadá, když zrovna neprodáváme.",
   "items": [
     {
+      "slug": "sazava-2026",
+      "caption": "Podzimní firemní akce – Sázava 2026"
+    },
+    {
       "slug": "liptov-2012",
       "caption": "Cesta do neznáma – Liptov 2012"
     },

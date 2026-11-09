@@ -10,7 +10,7 @@ import team from '../data/editable/team.json';
 import album from '../data/editable/album.json';
 
 const heroWords = site.claim.split(' ');
-const teamPreview = team.items.slice(0, 4);
+const teamPreview = team.items;
 const initials = (name: string) => name.split(' ').map((w) => w[0]).join('');
 const baseRaw = import.meta.env.BASE_URL;
 const base = baseRaw.endsWith('/') ? baseRaw.slice(0, -1) : baseRaw;
@@ -153,7 +153,6 @@ const tbPreview = album.items
           </article>
         ))}
       </div>
-      <p style="margin-top:32px;text-align:center"><a class="btn btn-ghost" href={base + "/tym"}>{home.teamBtn}</a></p>
     </div>
   </section>
 </Base>
