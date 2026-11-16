@@ -9,6 +9,17 @@ const SITES = ['alerta', 'asistel'];
 const DASH_KEY = 'prehled-7g2k9xqv4m'; // master klic (zpetna kompatibilita)
 const ACCOUNTS = { alerta: { pass: 'alerta1', key: 'k-alerta-x7q2w' }, asistel: { pass: 'asistel1', key: 'k-asistel-m9v4p' } };
 const STATS_TTL = 60 * 60 * 24 * 400;
+const GREPOS = { alerta: 'tomasdvoji/Alerta1', asistel: 'tomasdvoji/asistel' };
+// soubory editovatelne pres /data (whitelist — nic jineho nejde cist ani zapisovat)
+const FILES = { home: 'home.json', kariera: 'kariera.json', objednat: 'objednat.json', site: 'site.json', team: 'team.json', album: 'album.json' };
+
+async function ghPut(env, repo, path, b64, msg) {
+  const api = 'https://api.github.com/repos/' + repo + '/contents/' + path;
+  const gh = { Authorization: 'Bearer ' + env.GH_TOKEN, 'User-Agent': 'pozice-admin', Accept: 'application/vnd.github+json' };
+  const cur = await fetch(api, { headers: gh });
+  const sha = cur.ok ? (await cur.json()).sha : undefined;
+  return fetch(api, { method: 'PUT', headers: { ...gh, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: msg, content: b64, sha }) });
+}
 
 async function bump(env, site, kind, name) {
   if (!SITES.includes(site)) return;
@@ -161,6 +172,56 @@ export default {
       }
     }
 
+    // ---------- texty webu (whitelistovane JSONy) ----------
+    if (url.pathname === '/data') {
+      const site = url.searchParams.get('site');
+      const k = url.searchParams.get('key');
+      const file = url.searchParams.get('file');
+      if (!SITES.includes(site) || (k !== DASH_KEY && k !== ACCOUNTS[site].key) || !FILES[file]) {
+        return new Response('forbidden', { status: 403, headers: cors });
+      }
+      const path = 'src/data/editable/' + FILES[file];
+      if (req.method === 'GET') {
+        const r = await fetch('https://raw.githubusercontent.com/' + GREPOS[site] + '/main/' + path, { headers: { 'User-Agent': 'pozice-admin' }, cf: { cacheTtl: 0 } });
+        if (!r.ok) return new Response('github ' + r.status, { status: 502, headers: cors });
+        return Response.json(await r.json(), { headers: cors });
+      }
+      if (req.method === 'POST') {
+        if (!env.GH_TOKEN) return new Response('GH_TOKEN neni nastaveny', { status: 503, headers: cors });
+        let b;
+        try { b = await req.json(); } catch { return new Response('bad request', { status: 400, headers: cors }); }
+        if (!b || typeof b.data !== 'object') return new Response('bad request', { status: 400, headers: cors });
+        const body = JSON.stringify(b.data, null, 2) + '\n';
+        if (body.length > 300000) return new Response('too big', { status: 400, headers: cors });
+        const bytes = new TextEncoder().encode(body);
+        let bin = ''; for (const x of bytes) bin += String.fromCharCode(x);
+        const r = await ghPut(env, GREPOS[site], path, btoa(bin), 'web: uprava ' + FILES[file] + ' pres administraci');
+        if (!r.ok) return new Response('github ' + r.status, { status: 502, headers: cors });
+        return Response.json({ ok: true }, { headers: cors });
+      }
+    }
+
+    // ---------- upload fotky (album + tym) ----------
+    if (req.method === 'POST' && url.pathname === '/foto') {
+      const site = url.searchParams.get('site');
+      const k = url.searchParams.get('key');
+      if (!SITES.includes(site) || (k !== DASH_KEY && k !== ACCOUNTS[site].key)) {
+        return new Response('forbidden', { status: 403, headers: cors });
+      }
+      if (!env.GH_TOKEN) return new Response('GH_TOKEN neni nastaveny', { status: 503, headers: cors });
+      let b;
+      try { b = await req.json(); } catch { return new Response('bad request', { status: 400, headers: cors }); }
+      const path = String(b && b.path || '');
+      const b64 = String(b && b.b64 || '');
+      if (!/^(album\/[a-z0-9-]{1,60}\/\d{1,3}\.jpg|uploads\/zamestnanci\/[a-z0-9-]{1,80}\.jpg)$/.test(path) ||
+          !b64 || b64.length > 4000000 || /[^A-Za-z0-9+/=]/.test(b64.slice(0, 1000))) {
+        return new Response('bad request', { status: 400, headers: cors });
+      }
+      const r = await ghPut(env, GREPOS[site], 'public/' + path, b64, 'web: fotka ' + path + ' pres administraci');
+      if (!r.ok) return new Response('github ' + r.status, { status: 502, headers: cors });
+      return Response.json({ ok: true, path: '/' + path }, { headers: cors });
+    }
+
     return new Response('not found', { status: 404, headers: cors });
   },
 };
@@ -300,7 +361,7 @@ show();
 
 const PADMIN_HTML = `<!doctype html><html lang="cs"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Nábor — volné pozice</title>
+<title>Administrace webu</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
@@ -324,6 +385,14 @@ button.ghost{background:none;border:1px solid var(--line);color:var(--dim)}
 #login{max-width:360px;margin:12vh auto;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:30px}
 #logout{margin-left:auto;background:none;border:1px solid var(--line);color:var(--dim);padding:6px 14px}
 [hidden]{display:none!important}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;margin:0 0 16px}
+.seg button{background:none;border:0;color:var(--dim);font:inherit;font-weight:600;padding:6px 16px;border-radius:999px}
+.seg button.on{background:var(--mag);color:#fff}
+.trow{display:flex;gap:12px;align-items:center}
+.trow img{width:56px;height:56px;object-fit:cover;border-radius:50%;background:#333;flex:none}
+.trow .grow{flex:1}
+input[type=file]{padding:7px;background:none;border:1px dashed var(--line)}
+h2.sec{font-size:.95rem;color:var(--mag);text-transform:uppercase;letter-spacing:.4px;margin:22px 0 10px}
 </style></head><body>
 
 <div id="login" hidden>
@@ -335,15 +404,48 @@ button.ghost{background:none;border:1px solid var(--line);color:var(--dim)}
 </div>
 
 <div id="app" hidden>
-<header><h1 id="title">Volné pozice<span>.</span></h1>
+<header><h1 id="title">Administrace<span>.</span></h1>
   <a href="/dash" style="margin-left:auto;color:var(--dim);border:1px solid var(--line);border-radius:999px;padding:6px 14px;text-decoration:none;font-size:.9rem">← Statistiky</a>
   <button id="logout" style="margin-left:0">Odhlásit</button></header>
-<p class="muted">Změny se po uložení projeví na webu zhruba do 2 minut. Prázdný text inzerátu = použije se přednastavený text s benefity.</p>
+<p class="muted">Změny se po uložení projeví na webu zhruba do 2 minut.</p>
+<div class="seg" id="tabs"><button data-t="pozice" class="on">Volné pozice</button><button data-t="texty">Texty</button><button data-t="fotky">Fotky</button></div>
+
+<div id="tab-pozice">
+<p class="muted">Prázdný text inzerátu = použije se přednastavený text s benefity.</p>
 <div id="list"></div>
 <div class="bar">
   <button class="ghost" id="add">+ Přidat pozici</button>
   <button id="save">Uložit změny</button>
   <span id="msg"></span>
+</div>
+</div>
+
+<div id="tab-texty" hidden>
+<p class="muted">Vyberte část webu a upravte texty. Nic tu nerozbijete — mění se jen slova, ne vzhled.</p>
+<div class="bar" style="margin-top:0"><select id="txfile" style="max-width:280px">
+  <option value="home">Úvodní stránka</option>
+  <option value="kariera">Kariéra</option>
+  <option value="objednat">Objednání návštěvy</option>
+  <option value="site">Základní údaje a patička</option>
+</select></div>
+<div id="txlist"></div>
+<div class="bar"><button id="txsave">Uložit texty</button><span id="txmsg"></span></div>
+</div>
+
+<div id="tab-fotky" hidden>
+<h2 class="sec">Tým</h2>
+<p class="muted">Fotku člena vyměníte výběrem souboru — nahraje se hned, pak dejte „Uložit tým“. Fotky se automaticky zmenší.</p>
+<div id="tymlist"></div>
+<div class="bar"><button class="ghost" id="tymadd">+ Přidat člena</button><button id="tymsave">Uložit tým</button><span id="tymmsg"></span></div>
+
+<h2 class="sec">Fotoalbum akcí</h2>
+<div id="alblist"></div>
+<div class="card">
+  <label>Název nové akce (např. „Letní akce – Sázava 2027“)</label><input id="albcap">
+  <label>Fotky z akce (lze vybrat víc najednou)</label><input id="albfiles" type="file" accept="image/*" multiple>
+  <p style="margin:12px 0 0"><button id="albup">Nahrát novou akci</button></p>
+</div>
+<div class="bar"><button id="albsave">Uložit názvy akcí</button><span id="albmsg"></span></div>
 </div>
 </div>
 
@@ -376,7 +478,7 @@ function collect(){
 function show(){
   $('login').hidden=!!auth;$('app').hidden=!auth;
   if(!auth)return;
-  $('title').innerHTML='Volné pozice '+auth.site.charAt(0).toUpperCase()+auth.site.slice(1)+'<span>.</span>';
+  $('title').innerHTML='Administrace '+auth.site.charAt(0).toUpperCase()+auth.site.slice(1)+'<span>.</span>';
   fetch('/pozice?site='+auth.site+'&key='+encodeURIComponent(auth.key))
     .then(function(r){if(!r.ok)throw 0;return r.json()})
     .then(function(d){items=d.items;render()})
@@ -402,6 +504,152 @@ $('save').onclick=function(){
     .then(function(r){if(!r.ok)throw 0;return r.json()})
     .then(function(){$('msg').className='ok';$('msg').textContent='Uloženo ✓ Web se obnoví do pár minut.'})
     .catch(function(){$('msg').className='err';$('msg').textContent='Uložení se nepovedlo. Zkuste to znovu.'});
+};
+
+// ---------- zalozky ----------
+var SITEURL={asistel:'https://www.asistel.cz',alerta:'https://www.alerta.cz'};
+var loaded={};
+$('tabs').addEventListener('click',function(e){
+  var b=e.target.closest('button');if(!b)return;
+  var btns=$('tabs').children;for(var i=0;i<btns.length;i++)btns[i].classList.toggle('on',btns[i]===b);
+  ['pozice','texty','fotky'].forEach(function(t){$('tab-'+t).hidden=t!==b.dataset.t});
+  if(b.dataset.t==='texty'&&!loaded.texty){loaded.texty=1;loadTexty()}
+  if(b.dataset.t==='fotky'&&!loaded.fotky){loaded.fotky=1;loadTym();loadAlb()}
+});
+function getData(file){return fetch('/data?site='+auth.site+'&key='+encodeURIComponent(auth.key)+'&file='+file+'&t='+Date.now()).then(function(r){if(!r.ok)throw 0;return r.json()})}
+function postData(file,data){return fetch('/data?site='+auth.site+'&key='+encodeURIComponent(auth.key)+'&file='+file,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({data:data})}).then(function(r){if(!r.ok)throw 0})}
+function slug2(s){return String(s).normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)}
+function saveMsg(el,p){el.className='';el.textContent='Ukládám…';p.then(function(){el.className='ok';el.textContent='Uloženo ✓ Web se obnoví do pár minut.'}).catch(function(){el.className='err';el.textContent='Uložení se nepovedlo. Zkuste to znovu.'})}
+
+// ---------- texty ----------
+var txData=null;
+function walk(o,pre,out){
+  for(var k in o){if(!Object.prototype.hasOwnProperty.call(o,k))continue;
+    var v=o[k],p=pre.concat([k]);
+    if(typeof v==='string')out.push({p:p,v:v});
+    else if(v&&typeof v==='object')walk(v,p,out);}
+}
+function loadTexty(){
+  $('txlist').innerHTML='<p class="muted">Načítám…</p>';
+  getData($('txfile').value).then(function(d){
+    txData=d;var out=[],fields=[];walk(d,[],fields);
+    for(var i=0;i<fields.length;i++){var f=fields[i];
+      var lab=f.p.filter(function(x){return !/^\\d+$/.test(x)}).join(' › ')+(/^\\d+$/.test(f.p[f.p.length-1])?' ('+(+f.p[f.p.length-1]+1)+')':'');
+      var long=f.v.length>70||f.v.indexOf('\\n')>-1;
+      out+='<div><label>'+esc(lab)+'</label>'+(long
+        ?'<textarea class="tx" data-p="'+esc(JSON.stringify(f.p))+'">'+esc(f.v)+'</textarea>'
+        :'<input class="tx" data-p="'+esc(JSON.stringify(f.p))+'" value="'+esc(f.v)+'">')+'</div>';}
+    $('txlist').innerHTML='<div class="card">'+(out||'<p class="muted">Tento soubor nemá žádné texty.</p>')+'</div>';
+  }).catch(function(){$('txlist').innerHTML='<p class="muted">Načtení se nepovedlo.</p>'});
+}
+$('txfile').onchange=loadTexty;
+$('txsave').onclick=function(){
+  var els=document.querySelectorAll('#txlist .tx');
+  for(var i=0;i<els.length;i++){var p=JSON.parse(els[i].dataset.p),o=txData;
+    for(var j=0;j<p.length-1;j++)o=o[p[j]];
+    o[p[p.length-1]]=els[i].value;}
+  saveMsg($('txmsg'),postData($('txfile').value,txData));
+};
+
+// ---------- fotky: zmenseni v prohlizeci ----------
+function resize(file,max){
+  return new Promise(function(res,rej){
+    var img=new Image();img.onerror=rej;
+    img.onload=function(){
+      var s=Math.min(1,max/Math.max(img.width,img.height));
+      var c=document.createElement('canvas');c.width=Math.round(img.width*s);c.height=Math.round(img.height*s);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      res(c.toDataURL('image/jpeg',0.82).split(',')[1]);
+    };
+    img.src=URL.createObjectURL(file);
+  });
+}
+function upload(path,b64){
+  return fetch('/foto?site='+auth.site+'&key='+encodeURIComponent(auth.key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({path:path,b64:b64})}).then(function(r){if(!r.ok)throw 0;return r.json()})
+}
+
+// ---------- fotky: tym ----------
+var tymData=null;
+function renderTym(){
+  var out='';
+  for(var i=0;i<tymData.items.length;i++){var m=tymData.items[i];
+    out+='<div class="card trow" data-i="'+i+'">'+
+      '<img src="'+esc(m.photo?SITEURL[auth.site]+m.photo:'')+'" alt="">'+
+      '<div class="grow"><label>Jméno</label><input class="t-name" value="'+esc(m.name||'')+'">'+
+      '<label>Role / prodejna</label><input class="t-role" value="'+esc(m.role||'')+'">'+
+      '<label>Nová fotka (nepovinné)</label><input type="file" accept="image/*" class="t-file">'+
+      '<p style="margin:10px 0 0"><button class="ghost t-del">Smazat člena</button></p></div></div>';}
+  $('tymlist').innerHTML=out||'<p class="muted">Zatím nikdo.</p>';
+}
+function collectTym(){
+  var cards=document.querySelectorAll('#tymlist .card');
+  for(var i=0;i<cards.length;i++){var it=tymData.items[+cards[i].dataset.i];
+    it.name=cards[i].querySelector('.t-name').value;it.role=cards[i].querySelector('.t-role').value;}
+}
+function loadTym(){
+  getData('team').then(function(d){tymData=d;renderTym()})
+    .catch(function(){$('tymlist').innerHTML='<p class="muted">Načtení se nepovedlo.</p>'});
+}
+$('tymlist').addEventListener('change',function(e){
+  if(!e.target.classList.contains('t-file')||!e.target.files[0])return;
+  collectTym();
+  var card=e.target.closest('.card'),i=+card.dataset.i;
+  $('tymmsg').className='';$('tymmsg').textContent='Nahrávám fotku…';
+  resize(e.target.files[0],900).then(function(b64){
+    var path='uploads/zamestnanci/'+(slug2(tymData.items[i].name)||'clen')+'-'+Date.now()+'.jpg';
+    return upload(path,b64);
+  }).then(function(r){
+    tymData.items[i].photo=r.path;card.querySelector('img').src=SITEURL[auth.site]+r.path;
+    $('tymmsg').className='ok';$('tymmsg').textContent='Fotka nahrána ✓ Nezapomeňte „Uložit tým“.';
+  }).catch(function(){$('tymmsg').className='err';$('tymmsg').textContent='Nahrání fotky se nepovedlo.'});
+});
+$('tymlist').addEventListener('click',function(e){
+  if(!e.target.classList.contains('t-del'))return;
+  collectTym();tymData.items.splice(+e.target.closest('.card').dataset.i,1);renderTym();
+});
+$('tymadd').onclick=function(){collectTym();tymData.items.push({name:'',role:'',photo:''});renderTym()};
+$('tymsave').onclick=function(){collectTym();saveMsg($('tymmsg'),postData('team',tymData))};
+
+// ---------- fotky: album ----------
+var albData=null;
+function renderAlb(){
+  var out='';
+  for(var i=0;i<albData.items.length;i++){var a=albData.items[i];
+    out+='<div class="card" data-i="'+i+'"><label>Název akce</label><input class="a-cap" value="'+esc(a.caption||'')+'">'+
+      '<p style="margin:10px 0 0" class="muted">složka: '+esc(a.slug)+' · <button class="ghost a-del" style="padding:4px 12px">Odebrat z webu</button></p></div>';}
+  $('alblist').innerHTML=out||'<p class="muted">Zatím žádné akce.</p>';
+}
+function collectAlb(){
+  var cards=document.querySelectorAll('#alblist .card');
+  for(var i=0;i<cards.length;i++)albData.items[+cards[i].dataset.i].caption=cards[i].querySelector('.a-cap').value;
+}
+function loadAlb(){
+  getData('album').then(function(d){albData=d;renderAlb()})
+    .catch(function(){$('alblist').innerHTML='<p class="muted">Načtení se nepovedlo.</p>'});
+}
+$('alblist').addEventListener('click',function(e){
+  if(!e.target.classList.contains('a-del'))return;
+  collectAlb();albData.items.splice(+e.target.closest('.card').dataset.i,1);renderAlb();
+});
+$('albsave').onclick=function(){collectAlb();saveMsg($('albmsg'),postData('album',albData))};
+$('albup').onclick=function(){
+  var cap=$('albcap').value.trim(),files=$('albfiles').files;
+  if(!cap||!files.length){$('albmsg').className='err';$('albmsg').textContent='Vyplňte název akce a vyberte fotky.';return}
+  var sl=slug2(cap);collectAlb();
+  var done=0;$('albmsg').className='';
+  var chain=Promise.resolve();
+  for(var i=0;i<files.length;i++)(function(i){
+    chain=chain.then(function(){return resize(files[i],1600)}).then(function(b64){
+      return upload('album/'+sl+'/'+(i+1)+'.jpg',b64);
+    }).then(function(){done++;$('albmsg').textContent='Nahrávám… '+done+'/'+files.length});
+  })(i);
+  chain.then(function(){
+    albData.items.unshift({slug:sl,caption:cap});
+    return postData('album',albData);
+  }).then(function(){
+    $('albmsg').className='ok';$('albmsg').textContent='Akce nahrána ✓ Web se obnoví do pár minut.';
+    $('albcap').value='';$('albfiles').value='';renderAlb();
+  }).catch(function(){$('albmsg').className='err';$('albmsg').textContent='Nahrání se nepovedlo. Zkuste to znovu.'});
 };
 show();
 </script></body></html>
